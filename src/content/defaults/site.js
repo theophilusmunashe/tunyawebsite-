@@ -12,7 +12,7 @@ export const site = {
     menuLabel: "Beyond the Falls",
     menu: [
       { label: "Destinations", page: "beyond" },
-      { label: "Visas & Immigration", page: "visas" },
+      { label: "Customs & Immigration", page: "visas" },
       { label: "About Tunyafrika", page: "about" },
       { label: "Our Footprints on Socials", page: "social" }
     ],
@@ -28,7 +28,7 @@ export const site = {
       { label: "Xperiences", page: "xp" },
       { label: "Stays", page: "stays" },
       { label: "Beyond the Falls", page: "beyond" },
-      { label: "Visas & Immigration", page: "visas" },
+      { label: "Customs & Immigration", page: "visas" },
       { label: "About Tunyafrika", page: "about" },
       { label: "Our Footprints on Socials", page: "social" }
     ],

@@ -110,7 +110,7 @@ No CSS framework, no UI kit, no icon package. All icons are hand-written inline 
 
 **Header behaviour**
 
-- "Beyond the Falls ▾" opens a dropdown: Destinations · Visas & Immigration · About Tunyafrika · Our Footprints on Socials.
+- "Beyond the Falls ▾" opens a dropdown: Destinations · Customs & Immigration · About Tunyafrika · Our Footprints on Socials.
 - "Meet Tunya" and the gold "Plan My Trip" button open **www.tunya.africa** in a new tab.
 - The internal Meet Tunya and Plan My Trip pages are reachable from the footer.
 
