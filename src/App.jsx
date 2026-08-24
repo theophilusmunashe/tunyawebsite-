@@ -6,6 +6,7 @@ import VictoriaFalls from "./pages/VictoriaFalls.jsx";
 import Xperiences from "./pages/Xperiences.jsx";
 import Stays from "./pages/Stays.jsx";
 import BeyondTheFalls from "./pages/BeyondTheFalls.jsx";
+import Visas from "./pages/Visas.jsx";
 import About from "./pages/About.jsx";
 import Socials from "./pages/Socials.jsx";
 import MeetTunya from "./pages/MeetTunya.jsx";
@@ -17,6 +18,7 @@ const PAGES = {
   xp: Xperiences,
   stays: Stays,
   beyond: BeyondTheFalls,
+  visas: Visas,
   about: About,
   social: Socials,
   ai: MeetTunya,

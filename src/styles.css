@@ -472,3 +472,207 @@ input, textarea, button { font-family: "Poppins", sans-serif; }
     display: none !important;
   }
 }
+
+/* Visas & Immigration page: sticky in-page nav, country tabs, TIP accordion. */
+.visa-subnav {
+  position: sticky;
+  top: 88px;
+  z-index: 40;
+  background: rgba(4, 48, 31, 0.97);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(179, 149, 92, 0.35);
+}
+.visa-subnav-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 48px;
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.visa-subnav-inner::-webkit-scrollbar {
+  display: none;
+}
+.visa-subnav-link {
+  appearance: none;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+  padding: 20px 0 17px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(250, 243, 232, 0.62);
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+.visa-subnav-link:hover {
+  color: #faf3e8;
+}
+.visa-subnav-link.is-active {
+  color: #b3955c;
+  border-bottom-color: #b3955c;
+}
+
+.visa-section {
+  scroll-margin-top: 148px;
+}
+
+.visa-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  margin-top: 50px;
+  border-bottom: 1px solid rgba(4, 48, 31, 0.18);
+}
+.visa-tab {
+  appearance: none;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 16px 26px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(13, 43, 30, 0.6);
+  border-bottom: 2px solid transparent;
+  transition: color 0.2s ease, background 0.2s ease;
+}
+.visa-tab:hover {
+  color: #04301f;
+  background: rgba(179, 149, 92, 0.12);
+}
+.visa-tab.is-active {
+  color: #04301f;
+  border-bottom-color: #b3955c;
+  background: rgba(179, 149, 92, 0.16);
+}
+
+.visa-accordion-head {
+  appearance: none;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  font-family: 'Cormorant Garamond', serif;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  text-align: left;
+  padding: 26px 0;
+  font-size: 30px;
+  line-height: 1.2;
+  color: #faf3e8;
+  transition: color 0.2s ease;
+}
+.visa-accordion-head:hover {
+  color: #b3955c;
+}
+
+/* e-TIP portal walkthrough: numbered stepper, screenshot frame, document links. */
+.etip-step {
+  appearance: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  padding: 11px 17px;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+.etip-step:hover {
+  border-color: #b3955c;
+  color: #faf3e8;
+}
+.etip-step[aria-current="true"]:hover {
+  color: #04301f;
+}
+
+.etip-arrow {
+  appearance: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  background: transparent;
+  border: 1px solid rgba(179, 149, 92, 0.5);
+  color: #b3955c;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.etip-arrow:hover {
+  background: #b3955c;
+  color: #04301f;
+}
+
+.etip-download {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  text-decoration: none;
+  border: 1px solid rgba(179, 149, 92, 0.45);
+  padding: 18px 22px;
+  min-width: 280px;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+.etip-download:hover {
+  border-color: #b3955c;
+  background: rgba(179, 149, 92, 0.1);
+}
+
+@media (max-width: 1199px) {
+  .visa-subnav {
+    top: 72px;
+  }
+  .visa-subnav-inner {
+    padding-left: 28px !important;
+    padding-right: 28px !important;
+    gap: 22px;
+  }
+  .visa-section {
+    scroll-margin-top: 126px;
+  }
+  .visa-accordion-head {
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 699px) {
+  .visa-subnav-inner {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+  .visa-tab {
+    padding: 14px 18px;
+  }
+  .visa-accordion-head {
+    font-size: 21px;
+    padding: 22px 0;
+  }
+  /* Portal screenshots are wide desktop UI: pan sideways rather than shrink to illegible. */
+  .etip-frame {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 10px;
+  }
+  .etip-frame img {
+    min-width: 660px;
+  }
+  .etip-caption {
+    flex-direction: column;
+    gap: 16px;
+  }
+  .etip-download {
+    min-width: 0;
+    width: 100%;
+  }
+}
