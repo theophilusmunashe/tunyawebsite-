@@ -44,10 +44,10 @@ export const site = {
     addressLine1: "619 Ngugwuma Road",
     addressLine2: "Victoria Falls, Zimbabwe",
     socials: [
-      { network: "facebook", href: "https://www.facebook.com/tunyafrika" },
-      { network: "instagram", href: "https://www.instagram.com/tunyafrika" },
+      { network: "facebook", href: "https://www.facebook.com/share/1AQtQoLBrE/" },
+      { network: "instagram", href: "https://www.instagram.com/tunyafrika_xperience" },
       { network: "x", href: "https://x.com/tunyafrika" },
-      { network: "tiktok", href: "https://www.tiktok.com/@tunyafrika" },
+      { network: "tiktok", href: "https://www.tiktok.com/@tunyafrika.xperie" },
       { network: "whatsapp", href: "https://wa.me/263782669251" }
     ],
     copyright: "© 2026 Tunyafrika Xperiences · www.tunyafrika.com"
