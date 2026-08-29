@@ -36,6 +36,7 @@ export default function Socials({ go }) {
                 <div style={{fontFamily: "'Cormorant Garamond', serif", fontSize: "32px", marginTop: "18px"}}>{channel.name}</div>
                 <div style={handleStyle}>{channel.handle}</div>
                 <div style={cardBodyStyle}>{channel.body}</div>
+                <div style={{ marginTop: 16, fontSize: 12, fontWeight: 600, letterSpacing: "0.18em", textTransform: "uppercase", color: "#8a7040" }}>Follow</div>
               </a>
             ))}
             <a className="x6" href={tunyaCard.href} target="_blank" rel="noopener" style={{textDecoration: "none", color: "#faf3e8", background: "#04301f", padding: "34px 32px", display: "block"}}>

@@ -52,7 +52,7 @@ export default function Footer({ go }) {
             </div>
             <div style={{display: "flex", alignItems: "center", gap: "16px", marginTop: "20px", color: "rgba(250,243,232,0.8)"}}>
               {f.socials.map((s) => (
-                <a key={s.network} className="x3" href={s.href} target="_blank" rel="noopener" style={{color: "inherit", display: "flex"}}>{ICONS[s.network]}</a>
+                <a key={s.network} className="x3" href={s.href} target="_blank" rel="noopener" aria-label={s.network} style={{color: "inherit", display: "flex"}}>{ICONS[s.network]}</a>
               ))}
             </div>
           </div>

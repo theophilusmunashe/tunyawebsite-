@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Header from "./components/Header.jsx";
 import Footer from "./components/Footer.jsx";
+import SocialConnect from "./components/SocialConnect.jsx";
 import Home from "./pages/Home.jsx";
 import VictoriaFalls from "./pages/VictoriaFalls.jsx";
 import Xperiences from "./pages/Xperiences.jsx";
@@ -40,6 +41,7 @@ export default function App() {
       <Header go={go} page={page} />
       <Current go={go} />
       <Footer go={go} />
+      <SocialConnect go={go} page={page} />
     </div>
   );
 }
