@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useContent } from "../content/ContentProvider.jsx";
 import { FOLLOW_NETWORKS, SOCIAL_LABELS, SocialIcon } from "./SocialIcons.jsx";
 
-const POPUP_KEY = "tunya-saw-social-popup";
+const POPUP_KEY = "tunya-saw-social-popup-v2";
 
 function alreadySeen() {
   try {
@@ -48,7 +48,7 @@ export default function SocialConnect() {
       setShowDock(true);
       return undefined;
     }
-    const wait = window.setTimeout(() => setPopup(true), 30000);
+    const wait = window.setTimeout(() => setPopup(true), 10000);
     return () => window.clearTimeout(wait);
   }, []);
 
