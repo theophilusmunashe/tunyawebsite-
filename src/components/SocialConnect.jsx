@@ -29,7 +29,8 @@ export default function SocialConnect({ go, page }) {
     const fromPage = (social.channels || []).find((s) => s.network === network);
     return {
       network,
-      name: SOCIAL_LABELS[network],
+      name: fromPage?.name || SOCIAL_LABELS[network],
+      platform: SOCIAL_LABELS[network],
       handle: fromPage?.handle || "@tunyafrika",
       href: fromFooter?.href || fromPage?.href || "#"
     };
@@ -67,10 +68,10 @@ export default function SocialConnect({ go, page }) {
             href={c.href}
             target="_blank"
             rel="noopener noreferrer"
-            aria-label={`Follow Tunyafrika on ${c.name}`}
+            aria-label={`Follow ${c.name} on ${c.platform}`}
           >
             <SocialIcon network={c.network} size={18} />
-            <span>{c.name}</span>
+            <span>{c.platform}</span>
           </a>
         ))}
       </aside>
