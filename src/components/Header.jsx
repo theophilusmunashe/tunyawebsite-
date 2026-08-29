@@ -5,15 +5,36 @@ import { imageSrc } from "../lib/sanity.js";
 const linkStyle = {cursor: "pointer", fontSize: "12px", fontWeight: "400", letterSpacing: "0.22em", textTransform: "uppercase", color: "rgba(250,243,232,0.85)", padding: "6px 0", borderBottom: "1px solid transparent"};
 const menuItemStyle = {cursor: "pointer", padding: "14px 24px", fontSize: "12px", fontWeight: "400", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(250,243,232,0.88)"};
 
-export default function Header({ go }) {
+const HINT_KEY = "tunya-saw-menu-hint";
+
+function hintAlreadySeen() {
+  try {
+    return window.localStorage.getItem(HINT_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+export default function Header({ go, page }) {
   const { site } = useContent();
   const nav = site.nav;
   const [menu, setMenu] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
+  const [showHint, setShowHint] = useState(false);
+
+  const dismissHint = () => {
+    setShowHint(false);
+    try {
+      window.localStorage.setItem(HINT_KEY, "1");
+    } catch {
+      /* ignore */
+    }
+  };
 
   const visit = (next) => {
     setMenu(false);
     setNavOpen(false);
+    dismissHint();
     go(next);
   };
 
@@ -32,6 +53,15 @@ export default function Header({ go }) {
     };
   }, [navOpen]);
 
+  useEffect(() => {
+    if (page !== "home" || hintAlreadySeen()) {
+      setShowHint(false);
+      return;
+    }
+    const t = window.setTimeout(() => setShowHint(true), 600);
+    return () => window.clearTimeout(t);
+  }, [page]);
+
   return (
     <div className="site-header" style={{position: "sticky", top: "0", zIndex: "50", background: "rgba(4,48,31,0.97)", backdropFilter: "blur(8px)", borderBottom: "1px solid rgba(179,149,92,0.35)"}}>
         <div className="site-header-inner" style={{maxWidth: "1400px", margin: "0 auto", padding: "0 48px", height: "88px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "40px"}}>
@@ -40,17 +70,32 @@ export default function Header({ go }) {
               <img className="site-logo" src={imageSrc(site.logo, "/assets/logo-cream.png")} alt={site.logoAlt} style={{width: "190px", margin: "-58px -44px"}} />
             </span>
           </div>
-          <button
-            type="button"
-            className={`site-burger${navOpen ? " is-open" : ""}`}
-            aria-label={navOpen ? "Close menu" : "Open menu"}
-            aria-expanded={navOpen}
-            onClick={() => { setMenu(false); setNavOpen(v => !v); }}
-          >
-            <span></span>
-            <span></span>
-            <span></span>
-          </button>
+          <div className="site-burger-wrap">
+            <button
+              type="button"
+              className={`site-burger${navOpen ? " is-open" : ""}${showHint && !navOpen ? " is-hint" : ""}`}
+              aria-label={navOpen ? "Close menu" : "Open menu"}
+              aria-expanded={navOpen}
+              onClick={() => {
+                setMenu(false);
+                setNavOpen((v) => {
+                  const next = !v;
+                  if (next) dismissHint();
+                  return next;
+                });
+              }}
+            >
+              <span></span>
+              <span></span>
+              <span></span>
+            </button>
+            {showHint && !navOpen && (
+              <div className="site-nav-hint" role="status">
+                <p>Tap here to see everything Tunyafrika offers.</p>
+                <button type="button" className="site-nav-hint-ok" onClick={dismissHint}>Got it</button>
+              </div>
+            )}
+          </div>
           <div className="site-nav" style={{display: "flex", alignItems: "center", gap: "34px"}}>
             {nav.primary.map((item) => (
               <div key={item.label} className="x10" onClick={() => visit(item.page)} style={linkStyle}>{item.label}</div>

@@ -37,7 +37,7 @@ export default function App() {
 
   return (
     <div className="site-root" style={{ fontFamily: "'Poppins', sans-serif", color: "#0d2b1e", background: "#faf3e8", minHeight: "100vh" }}>
-      <Header go={go} />
+      <Header go={go} page={page} />
       <Current go={go} />
       <Footer go={go} />
     </div>

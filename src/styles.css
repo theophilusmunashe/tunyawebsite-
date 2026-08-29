@@ -124,6 +124,14 @@ input, textarea, button { font-family: "Poppins", sans-serif; }
 .site-burger.is-open span:nth-child(2) { opacity: 0; }
 .site-burger.is-open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
 
+.site-burger-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+.site-nav-hint {
+  display: none;
+}
+
 .site-mobile-nav {
   border-top: 1px solid rgba(179,149,92,0.35);
   padding: 8px 12px 28px;
@@ -220,6 +228,65 @@ input, textarea, button { font-family: "Poppins", sans-serif; }
   }
   .site-mobile-nav {
     display: block;
+  }
+
+  .site-burger.is-hint {
+    box-shadow: 0 0 0 0 rgba(179, 149, 92, 0.55);
+    animation: site-hint-pulse 1.8s ease-out infinite;
+    border-radius: 8px;
+  }
+  .site-nav-hint {
+    display: block;
+    position: absolute;
+    top: calc(100% + 12px);
+    right: 0;
+    width: min(248px, calc(100vw - 32px));
+    background: #faf3e8;
+    color: #0d2b1e;
+    border: 1px solid #b3955c;
+    padding: 14px 14px 12px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
+    z-index: 60;
+  }
+  .site-nav-hint::before {
+    content: "";
+    position: absolute;
+    top: -7px;
+    right: 16px;
+    width: 12px;
+    height: 12px;
+    background: #faf3e8;
+    border-left: 1px solid #b3955c;
+    border-top: 1px solid #b3955c;
+    transform: rotate(45deg);
+  }
+  .site-nav-hint p {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.45;
+    color: #0d2b1e;
+  }
+  .site-nav-hint-ok {
+    appearance: none;
+    background: none;
+    border: 0;
+    padding: 10px 0 0;
+    margin: 0;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #8a7040;
+  }
+  @keyframes site-hint-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(179, 149, 92, 0.5); }
+    70% { box-shadow: 0 0 0 12px rgba(179, 149, 92, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(179, 149, 92, 0); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .site-burger.is-hint { animation: none; }
   }
 
   [style*="padding:"][style*="48px"]:not(.site-header-inner) {
@@ -468,7 +535,9 @@ input, textarea, button { font-family: "Poppins", sans-serif; }
 
 @media (min-width: 1200px) {
   .site-burger,
-  .site-mobile-nav {
+  .site-burger-wrap,
+  .site-mobile-nav,
+  .site-nav-hint {
     display: none !important;
   }
 }
