@@ -20,9 +20,10 @@ function rememberSeen() {
   }
 }
 
-export default function SocialConnect({ go, page }) {
+export default function SocialConnect() {
   const { site, social } = useContent();
   const [popup, setPopup] = useState(false);
+  const [showDock, setShowDock] = useState(alreadySeen);
 
   const channels = FOLLOW_NETWORKS.map((network) => {
     const fromFooter = (site.footer.socials || []).find((s) => s.network === network);
@@ -39,50 +40,62 @@ export default function SocialConnect({ go, page }) {
   const closePopup = () => {
     setPopup(false);
     rememberSeen();
+    setShowDock(true);
   };
 
   useEffect(() => {
-    if (page === "social") rememberSeen();
-    if (alreadySeen() || page === "social") return undefined;
-    const wait = window.setTimeout(() => setPopup(true), 9000);
+    if (alreadySeen()) {
+      setShowDock(true);
+      return undefined;
+    }
+    const wait = window.setTimeout(() => setPopup(true), 30000);
     return () => window.clearTimeout(wait);
-  }, [page]);
+  }, []);
 
   useEffect(() => {
     if (!popup) return undefined;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
     const onKey = (e) => {
       if (e.key === "Escape") closePopup();
     };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      window.removeEventListener("keydown", onKey);
+    };
   }, [popup]);
 
   return (
     <>
-      <aside className="site-social-dock" aria-label="Follow Tunyafrika">
-        <p className="site-social-dock-label">Follow</p>
-        {channels.map((c) => (
-          <a
-            key={c.network}
-            className="site-social-dock-link"
-            href={c.href}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label={`Follow ${c.name} on ${c.platform}`}
-          >
-            <SocialIcon network={c.network} size={18} />
-            <span>{c.platform}</span>
-          </a>
-        ))}
-      </aside>
+      {showDock && !popup && (
+        <aside className="site-social-dock" aria-label="Follow Tunyafrika">
+          <p className="site-social-dock-label">Follow</p>
+          {channels.map((c) => (
+            <a
+              key={c.network}
+              className="site-social-dock-link"
+              href={c.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`Follow ${c.name} on ${c.platform}`}
+            >
+              <SocialIcon network={c.network} size={18} />
+              <span>{c.platform}</span>
+            </a>
+          ))}
+        </aside>
+      )}
 
       {popup && (
         <div className="site-social-pop" role="dialog" aria-labelledby="site-social-pop-title" aria-modal="true">
-          <button type="button" className="site-social-pop-veil" aria-label="Close" onClick={closePopup} />
           <div className="site-social-pop-card">
-            <p className="site-social-pop-kicker">Follow first</p>
-            <h2 id="site-social-pop-title">See the Falls before you book.</h2>
-            <p className="site-social-pop-copy">Daily spray, wildlife and guest moments — tap a channel and follow Tunyafrika.</p>
+            <p className="site-social-pop-kicker">Follow us on social media</p>
+            <h2 id="site-social-pop-title">We value you being here.</h2>
+            <p className="site-social-pop-copy">
+              Thank you for checking out how Tunyafrika provides Xpectional Xperiences.
+              Please follow all our social media accounts, then come back and keep exploring.
+            </p>
             <div className="site-social-pop-grid">
               {channels.map((c) => (
                 <a
@@ -92,22 +105,18 @@ export default function SocialConnect({ go, page }) {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <SocialIcon network={c.network} size={22} />
+                  <SocialIcon network={c.network} size={24} />
                   <span>
-                    <strong>{c.name}</strong>
-                    <em>{c.handle}</em>
+                    <strong>{c.platform}</strong>
+                    <em>{c.name} · {c.handle}</em>
                   </span>
+                  <b>Open</b>
                 </a>
               ))}
             </div>
-            <div className="site-social-pop-actions">
-              <button type="button" className="site-social-pop-more" onClick={() => { closePopup(); go("social"); }}>
-                All socials
-              </button>
-              <button type="button" className="site-social-pop-later" onClick={closePopup}>
-                Maybe later
-              </button>
-            </div>
+            <button type="button" className="site-social-pop-continue" onClick={closePopup}>
+              Continue to the site
+            </button>
           </div>
         </div>
       )}

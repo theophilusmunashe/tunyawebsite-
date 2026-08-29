@@ -41,7 +41,7 @@ export default function App() {
       <Header go={go} page={page} />
       <Current go={go} />
       <Footer go={go} />
-      <SocialConnect go={go} page={page} />
+      <SocialConnect />
     </div>
   );
 }
