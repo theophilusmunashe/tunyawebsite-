@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { BORDER_CHECKS } from "../data/catalog.js";
 import { useWorkspace } from "../store.jsx";
-import { Button, Empty, Field, Kicker, Modal } from "../ui.jsx";
+import { Button, Empty, Field, Modal, PageHead } from "../ui.jsx";
 
 const KAZA = [
   { id: "needed", label: "Needed" },
   { id: "issued", label: "Issued" },
   { id: "not-required", label: "Not required" },
-  { id: "check", label: "Check eligibility" }
+  { id: "check", label: "Check" }
 ];
 
 const blank = () => ({
@@ -31,37 +31,33 @@ export default function BorderDesk() {
 
   const save = async () => {
     await upsert("visaCases", form);
-    toast("Border desk updated.");
+    toast("Saved.");
     setForm(null);
   };
 
   return (
     <div>
-      <div className="ws-page-head">
-        <div>
-          <Kicker>Border Desk</Kicker>
-          <h1>Africa, minus the paperwork — for real.</h1>
-          <p className="ws-lede">KAZA UniVisa, blank pages, ZIMRA TIP, yellow fever, the lodge address on a scrap of paper. This is the checklist we run so a guest never meets a problem we already knew about.</p>
-        </div>
-        <Button onClick={() => setForm(blank())}>New case</Button>
-      </div>
+      <PageHead
+        title="Visas"
+        action={<Button onClick={() => setForm(blank())}>New case</Button>}
+      />
 
-      {visaCases.length === 0 && <Empty>No cases open. When a foreign passport appears on a journey, open a case here.</Empty>}
+      {visaCases.length === 0 && <Empty>No visa cases.</Empty>}
 
       <div className="ws-files">
         {visaCases.map((row) => (
           <div className="ws-file" key={row.id} style={{ cursor: "pointer" }} onClick={() => setForm({ ...row, checks: { ...blank().checks, ...row.checks } })}>
-            <Kicker>{KAZA.find((k) => k.id === row.kaza)?.label || row.kaza}</Kicker>
+            <div className="ws-kicker">{KAZA.find((k) => k.id === row.kaza)?.label || row.kaza}</div>
             <div className="name">{row.guestName}</div>
             <p className="ws-lede" style={{ margin: 0 }}>{row.nationality}</p>
             <div className="ws-curtain" style={{ marginTop: 12 }}><span style={{ width: `${score(row)}%` }} /></div>
-            <p className="ws-lede" style={{ margin: "8px 0 0", fontSize: 12 }}>{score(row)}% of the bridge is ready</p>
+            <p className="ws-lede" style={{ margin: "8px 0 0", fontSize: 12 }}>{score(row)}% ready</p>
           </div>
         ))}
       </div>
 
       {form && (
-        <Modal title={form.guestName || "Border case"} kicker="The bridge" onClose={() => setForm(null)}>
+        <Modal title={form.guestName || "Visa case"} onClose={() => setForm(null)}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
             <Field label="Guest">
               <input value={form.guestName} onChange={(e) => setForm({ ...form, guestName: e.target.value })} />
@@ -69,7 +65,7 @@ export default function BorderDesk() {
             <Field label="Nationality">
               <input value={form.nationality} onChange={(e) => setForm({ ...form, nationality: e.target.value })} />
             </Field>
-            <Field label="Journey">
+            <Field label="Booking">
               <select value={form.journeyId || ""} onChange={(e) => {
                 const j = journeys.find((x) => x.id === e.target.value);
                 setForm({ ...form, journeyId: e.target.value, guestName: j?.guestName || form.guestName, nationality: j?.nationality || form.nationality });
@@ -96,12 +92,11 @@ export default function BorderDesk() {
               </label>
             ))}
           </div>
-          <Field label="Notes for the officer at our desk">
+          <Field label="Notes">
             <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
           </Field>
-          <p className="ws-lede">Overnighting in Botswana voids a UniVisa. Harare airport does not issue it. First entry must match the portal they applied on.</p>
           <div className="ws-actions">
-            <Button onClick={save}>Save case</Button>
+            <Button onClick={save}>Save</Button>
             {form.id && <Button kind="warn" onClick={() => { remove("visaCases", form.id); setForm(null); }}>Remove</Button>}
           </div>
         </Modal>

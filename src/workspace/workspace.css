@@ -77,19 +77,15 @@
 
 .ws-gate-card h1 {
   font-family: "Cormorant Garamond", Georgia, serif;
-  font-size: clamp(36px, 6vw, 54px);
+  font-size: clamp(32px, 5vw, 44px);
   line-height: 1.05;
-  margin: 12px 0 10px;
+  margin: 8px 0 4px;
   font-weight: 500;
   color: #faf3e8;
 }
 
 .ws-gate-copy {
-  font-weight: 400;
-  color: #f3ead8;
-  line-height: 1.7;
-  margin: 0 0 18px;
-  font-size: 15px;
+  display: none;
 }
 
 .ws-crew-grid {
@@ -342,17 +338,18 @@ a.ws-btn.ghost:hover,
 }
 .ws-you { display: flex; align-items: center; gap: 10px; font-size: 13px; }
 
-.ws-page { padding: 28px 28px 64px; }
+.ws-page { padding: 24px 28px 56px; }
 
-.ws-page-head { display: flex; justify-content: space-between; gap: 16px; align-items: end; flex-wrap: wrap; margin-bottom: 24px; }
+.ws-page-head { display: flex; justify-content: space-between; gap: 16px; align-items: center; flex-wrap: wrap; margin-bottom: 20px; }
 .ws-page-head h1 {
-  font-family: "Cormorant Garamond", Georgia, serif;
-  font-size: clamp(32px, 4vw, 48px);
-  margin: 6px 0 0;
+  font-family: Poppins, sans-serif;
+  font-size: 22px;
+  margin: 0;
   font-weight: 500;
-  line-height: 1.08;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
 }
-.ws-lede { font-weight: 400; color: var(--ws-mute); max-width: 62ch; line-height: 1.7; margin-top: 8px; }
+.ws-lede { font-weight: 400; color: var(--ws-mute); line-height: 1.5; margin-top: 8px; font-size: 13px; }
 
 .ws-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 22px; }
 .ws-stat {
@@ -385,9 +382,9 @@ a.ws-btn.ghost:hover,
 .ws-panel.paper .ws-lede { color: rgba(13, 43, 30, 0.78); }
 .ws-panel.paper h2 { color: var(--ws-ink); }
 .ws-panel h2 {
-  font-family: "Cormorant Garamond", Georgia, serif;
-  font-size: 28px;
-  margin: 6px 0 14px;
+  font-family: Poppins, sans-serif;
+  font-size: 16px;
+  margin: 8px 0 14px;
   font-weight: 500;
 }
 
@@ -409,10 +406,11 @@ a.ws-btn.ghost:hover,
 .ws-pri.mist { color: var(--ws-ok); }
 
 .ws-empty {
-  padding: 36px 16px;
-  text-align: center;
+  padding: 24px 16px;
+  text-align: left;
   color: var(--ws-mute);
   font-weight: 400;
+  font-size: 13px;
 }
 
 .ws-table { width: 100%; border-collapse: collapse; font-size: 14px; }

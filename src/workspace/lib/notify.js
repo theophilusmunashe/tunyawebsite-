@@ -15,18 +15,18 @@ export function whatsappHref(phone, text) {
 export function taskMessage(task, assignee, actor) {
   const due = task.due ? `Due ${task.due}` : "No due date";
   return [
-    `Dispatch from the Tunyafrika Basecamp`,
+    `Tunyafrika task`,
     ``,
     `${actor?.name || "A colleague"} assigned you a task.`,
     ``,
     `Task: ${task.title}`,
-    `Priority: ${task.priority || "Spray"}`,
+    `Priority: ${task.priority === "thunder" ? "High" : task.priority === "mist" ? "Low" : "Medium"}`,
     due,
     task.notes ? `Notes: ${task.notes}` : null,
     ``,
-    `Open the desk: https://www.tunyafrika.com/admin`,
+    `https://www.tunyafrika.com/admin`,
     ``,
-    `— Tunyafrika Xperiences`
+    `Tunyafrika Xperiences`
   ].filter((line) => line !== null).join("\n");
 }
 

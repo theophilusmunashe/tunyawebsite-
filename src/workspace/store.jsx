@@ -28,7 +28,7 @@ function ping() {
 }
 
 export function workspaceKey() {
-  return import.meta.env.VITE_WORKSPACE_KEY || "the-smoke-that-thunders";
+  return import.meta.env.VITE_WORKSPACE_KEY || "123456";
 }
 
 export function WorkspaceProvider({ children }) {
@@ -51,8 +51,16 @@ export function WorkspaceProvider({ children }) {
       if (!next.crew?.length) next.crew = DEFAULT_CREW;
       next.files = await fileListMeta();
       setData(next);
+      setSession((current) => {
+        if (!current?.crewId) return current;
+        const stillThere = (next.crew || []).some((c) => c.id === current.crewId);
+        if (stillThere) return current;
+        sessionStorage.removeItem("tunya-desk");
+        localStorage.removeItem("tunya-desk");
+        return null;
+      });
     } catch (err) {
-      console.warn("Basecamp storage unavailable — opening this session only.", err);
+      console.warn("Workspace storage unavailable — session only.", err);
       setData({
         settings: { ...DEFAULT_SETTINGS },
         crew: DEFAULT_CREW,
@@ -115,8 +123,8 @@ export function WorkspaceProvider({ children }) {
       name: file.name,
       mime: file.type || "application/octet-stream",
       size: file.size,
-      folder: folder || "House",
-      uploadedBy: uploadedBy || "Desk",
+      folder: folder || "General",
+      uploadedBy: uploadedBy || "Admin",
       uploadedAt: Date.now(),
       blob: file
     };
@@ -169,7 +177,7 @@ export function WorkspaceProvider({ children }) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `tunyafrika-basecamp-${new Date().toISOString().slice(0, 10)}.tunya.json`;
+    a.download = `tunyafrika-admin-${new Date().toISOString().slice(0, 10)}.tunya.json`;
     a.click();
     URL.revokeObjectURL(url);
   }, []);
@@ -178,7 +186,7 @@ export function WorkspaceProvider({ children }) {
     const pack = JSON.parse(await file.text());
     await importBackup(pack);
     await load();
-    toast("Workspace pack restored. The cupboard is shared.");
+    toast("Backup restored.");
   }, [load, toast]);
 
   const you = useMemo(
@@ -212,6 +220,6 @@ export function WorkspaceProvider({ children }) {
 
 export function useWorkspace() {
   const ctx = useContext(WorkspaceContext);
-  if (!ctx) throw new Error("useWorkspace must be used inside the Basecamp");
+  if (!ctx) throw new Error("useWorkspace must be used inside the workspace");
   return ctx;
 }

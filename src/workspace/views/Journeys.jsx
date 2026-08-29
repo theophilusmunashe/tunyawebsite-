@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { JOURNEY_STAGES } from "../data/catalog.js";
 import { useWorkspace } from "../store.jsx";
-import { Button, CrewName, Empty, Field, Kicker, Modal, Money } from "../ui.jsx";
+import { Button, CrewName, Empty, Field, Modal, Money, PageHead } from "../ui.jsx";
 
 const blank = () => ({
   guestName: "",
@@ -29,22 +29,18 @@ export default function Journeys() {
 
   const save = async () => {
     await upsert("journeys", open);
-    toast(`${open.guestName || "Journey"} is on the board.`);
+    toast("Saved.");
     setOpen(null);
   };
 
   return (
     <div>
-      <div className="ws-page-head">
-        <div>
-          <Kicker>Journeys</Kicker>
-          <h1>From first sentence to last transfer.</h1>
-          <p className="ws-lede">Every Tunyafrika trip lives on this board. Enquiry, quoted, confirmed, in-country, complete — the same river the guest is on, seen from the desk.</p>
-        </div>
-        <Button onClick={() => setOpen(blank())}>New journey</Button>
-      </div>
+      <PageHead
+        title="Bookings"
+        action={<Button onClick={() => setOpen(blank())}>New booking</Button>}
+      />
 
-      {journeys.length === 0 && <Empty>No journeys yet. The first enquiry you pin here is the start of the season.</Empty>}
+      {journeys.length === 0 && <Empty>No bookings yet.</Empty>}
 
       <div className="ws-kanban">
         {JOURNEY_STAGES.map((stage) => (
@@ -53,7 +49,7 @@ export default function Journeys() {
             {journeys.filter((j) => j.stage === stage.id).map((j) => (
               <div className="ws-card" key={j.id} onClick={() => setOpen({ ...j })}>
                 <strong>{j.guestName}</strong>
-                <small>{j.product || "Unshaped"}</small>
+                <small>{j.product || "—"}</small>
                 <div style={{ marginTop: 8, fontSize: 12, color: "#e8dcc4" }}>{j.dates || "Dates TBA"}</div>
                 <div style={{ marginTop: 6, display: "flex", justifyContent: "space-between", fontSize: 12 }}>
                   <span><CrewName id={j.assignedTo} crew={crew} /></span>
@@ -66,7 +62,7 @@ export default function Journeys() {
       </div>
 
       {open && (
-        <Modal title={open.guestName || "New journey"} kicker="The board" onClose={() => setOpen(null)}>
+        <Modal title={open.guestName || "New booking"} onClose={() => setOpen(null)}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
             <Field label="Guest">
               <input value={open.guestName} onChange={(e) => setOpen({ ...open, guestName: e.target.value })} />
@@ -74,14 +70,14 @@ export default function Journeys() {
             <Field label="Email">
               <input value={open.guestEmail} onChange={(e) => setOpen({ ...open, guestEmail: e.target.value })} />
             </Field>
-            <Field label="Travelling as">
+            <Field label="Guests">
               <input value={open.pax} onChange={(e) => setOpen({ ...open, pax: e.target.value })} />
             </Field>
             <Field label="Nationality">
               <input value={open.nationality} onChange={(e) => setOpen({ ...open, nationality: e.target.value })} />
             </Field>
-            <Field label="Product / mood">
-              <input value={open.product} onChange={(e) => setOpen({ ...open, product: e.target.value })} placeholder="Weekend Escape, Grand Signature…" />
+            <Field label="Package">
+              <input value={open.product} onChange={(e) => setOpen({ ...open, product: e.target.value })} />
             </Field>
             <Field label="Stage">
               <select value={open.stage} onChange={(e) => setOpen({ ...open, stage: e.target.value })}>
@@ -97,17 +93,16 @@ export default function Journeys() {
             <Field label="Value USD">
               <input type="number" value={open.value || 0} onChange={(e) => setOpen({ ...open, value: Number(e.target.value) })} />
             </Field>
-            <Field label="Lead on desk">
+            <Field label="Assigned">
               <select value={open.assignedTo || ""} onChange={(e) => setOpen({ ...open, assignedTo: e.target.value })}>
                 <option value="">Unassigned</option>
                 {crew.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </Field>
           </div>
-          <Field label="Notes the guest should never have to repeat">
+          <Field label="Notes">
             <textarea value={open.notes} onChange={(e) => setOpen({ ...open, notes: e.target.value })} />
           </Field>
-          <Kicker>Days on the ground</Kicker>
           {(open.days || []).map((day, i) => (
             <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 28px", gap: 8, marginTop: 8 }}>
               <Field label={`Day ${i + 1}`}>
@@ -128,7 +123,7 @@ export default function Journeys() {
             </div>
           ))}
           <div className="ws-actions">
-            <Button kind="ghost" className="slim" onClick={() => setOpen({ ...open, days: [...(open.days || []), { title: "", notes: "" }] })}>Add a day</Button>
+            <Button kind="ghost" className="slim" onClick={() => setOpen({ ...open, days: [...(open.days || []), { title: "", notes: "" }] })}>Add day</Button>
           </div>
           <div className="ws-actions">
             {JOURNEY_STAGES.map((s) => (
@@ -136,7 +131,7 @@ export default function Journeys() {
             ))}
           </div>
           <div className="ws-actions">
-            <Button onClick={save}>Save journey</Button>
+            <Button onClick={save}>Save</Button>
             {open.id && <Button kind="warn" onClick={() => { remove("journeys", open.id); setOpen(null); }}>Remove</Button>}
           </div>
         </Modal>

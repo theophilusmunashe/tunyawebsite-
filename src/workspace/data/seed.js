@@ -1,4 +1,4 @@
-import { filePut, kvGet, kvSet } from "../lib/db.js";
+import { fileDelete, fileListMeta, kvGet, kvSet } from "../lib/db.js";
 import { uid } from "../lib/ids.js";
 import { todayISO } from "../lib/time.js";
 
@@ -19,15 +19,16 @@ export const DEFAULT_SETTINGS = {
   currency: "USD",
   quoteCounter: 2,
   invoiceCounter: 1,
-  chalkboard: "Sell the spray this week — the rainforest is at full voice. Devil's Pool stays off the page until the river falls."
+  chalkboard: ""
 };
 
+export const DROPPED_CREW_IDS = ["crew_tc", "crew_f"];
+const REASSIGN = { crew_tc: "crew_tm", crew_f: "crew_dm" };
+
 export const DEFAULT_CREW = [
-  { id: "crew_tm", initials: "TM", name: "Theophilus Munashe Maposa", role: "Guest relations", email: "theophilus@tunyafrika.com", phone: "", seat: "The deck" },
-  { id: "crew_rv", initials: "RV", name: "Rudolph Benjamin Volksgyn", role: "Field operations", email: "rudolph@tunyafrika.com", phone: "", seat: "The river" },
-  { id: "crew_dm", initials: "DM", name: "Dzikamai Ronald Muchemedzi", role: "Accounts & ledger", email: "dzikamai@tunyafrika.com", phone: "", seat: "The books" },
-  { id: "crew_tc", initials: "TC", name: "Tatenda Blessing Chakwesha", role: "Bookings & stays", email: "tatenda@tunyafrika.com", phone: "", seat: "The rooms" },
-  { id: "crew_f", initials: "F", name: "Fungai", role: "Border desk & visas", email: "fungai@tunyafrika.com", phone: "", seat: "The bridge" }
+  { id: "crew_tm", initials: "TM", name: "Theophilus Munashe Maposa", role: "Admin", email: "theophilus@tunyafrika.com", phone: "" },
+  { id: "crew_rv", initials: "RV", name: "Rudolph Benjamin Volksgyn", role: "Admin", email: "rudolph@tunyafrika.com", phone: "" },
+  { id: "crew_dm", initials: "DM", name: "Dzikamai Ronald Muchemedzi", role: "Admin", email: "dzikamai@tunyafrika.com", phone: "" }
 ];
 
 function daysFromToday(n) {
@@ -40,12 +41,54 @@ let seedLock = null;
 
 export async function seedIfEmpty() {
   if (!seedLock) {
-    seedLock = writeSeed().catch((err) => {
-      seedLock = null;
-      throw err;
-    });
+    seedLock = writeSeed()
+      .then(() => migrateWorkspace())
+      .catch((err) => {
+        seedLock = null;
+        throw err;
+      });
   }
   return seedLock;
+}
+
+export async function migrateWorkspace() {
+  const crew = (await kvGet("crew")) || [];
+  if (crew.length) {
+    const next = crew
+      .filter((c) => !DROPPED_CREW_IDS.includes(c.id) && !isDroppedName(c.name))
+      .map((c) => ({ ...c, role: "Admin" }));
+    const same =
+      crew.length === next.length &&
+      crew.every((c) => next.some((n) => n.id === c.id && n.role === "Admin"));
+    if (!same) await kvSet("crew", next);
+  }
+
+  for (const key of ["tasks", "journeys", "movements"]) {
+    const list = (await kvGet(key)) || [];
+    let changed = false;
+    const next = list.map((row) => {
+      const mapped = REASSIGN[row.assignedTo];
+      if (!mapped) return row;
+      changed = true;
+      return { ...row, assignedTo: mapped };
+    });
+    if (changed) await kvSet(key, next);
+  }
+
+  const settings = (await kvGet("settings")) || {};
+  if (typeof settings.chalkboard === "string" && /spray this week|rainforest is at full voice/i.test(settings.chalkboard)) {
+    await kvSet("settings", { ...settings, chalkboard: "" });
+  }
+
+  const files = await fileListMeta();
+  for (const file of files) {
+    if (file.name === "How we keep the Vault.txt") await fileDelete(file.id);
+  }
+}
+
+function isDroppedName(name = "") {
+  const n = String(name).trim().toLowerCase();
+  return n === "fungai" || n.startsWith("tatenda");
 }
 
 async function writeSeed() {
@@ -72,7 +115,7 @@ async function writeSeed() {
       depart: daysFromToday(4),
       stage: "confirmed",
       value: 1450,
-      assignedTo: "crew_tc",
+      assignedTo: "crew_tm",
       notes: "Anniversary add-on: private deck dinner on Saturday. Child is eight — no gorge swing.",
       days: [
         { title: "Arrive VFA · lodge check-in · sunset cruise", notes: "Flight UM 731, 11:40. Rudolph on the pickup." },
@@ -152,7 +195,7 @@ async function writeSeed() {
       priority: "thunder",
       status: "open",
       due: daysFromToday(0),
-      assignedTo: "crew_tc",
+      assignedTo: "crew_tm",
       journeyId: moyo
     },
     {
@@ -162,7 +205,7 @@ async function writeSeed() {
       priority: "spray",
       status: "on-it",
       due: daysFromToday(2),
-      assignedTo: "crew_f",
+      assignedTo: "crew_dm",
       journeyId: anika
     },
     {
@@ -202,7 +245,7 @@ async function writeSeed() {
       whenTime: "19:30",
       kind: "Evening",
       detail: "The Boma Dinner — table for three, Moyo",
-      assignedTo: "crew_tc",
+      assignedTo: "crew_tm",
       journeyId: moyo
     }
   ]);
@@ -239,33 +282,5 @@ async function writeSeed() {
 
   await kvSet("briefs", []);
   await kvSet("notices", []);
-
-  const welcome = new Blob(
-    [`THE VAULT — Tunyafrika Basecamp
-
-This is the house cupboard. Contracts, itineraries, permits, guest documents and supplier rates live here so anyone at the desk can find them.
-
-How we keep it useful
-• Name files as Guest_Product_Date (e.g. Silva_GrandSignature_2026-09).
-• Guest passports and IDs go in Guest documents, never in Marketing.
-• Permits and operator licences go in Permits & licences with the expiry in the filename.
-• A workspace pack (Settings → Export) is how another machine receives the same cupboard.
-
-The river is loud. The paperwork should be quiet.
-`],
-    { type: "text/plain" }
-  );
-
-  await filePut({
-    id: uid("file"),
-    name: "How we keep the Vault.txt",
-    mime: "text/plain",
-    size: welcome.size,
-    folder: "House",
-    uploadedBy: "Basecamp",
-    uploadedAt: Date.now(),
-    blob: welcome
-  });
-
   await kvSet("seeded", true);
 }

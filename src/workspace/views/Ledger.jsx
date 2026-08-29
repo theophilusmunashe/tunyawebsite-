@@ -5,7 +5,7 @@ import { notifyPerson } from "../lib/notify.js";
 import { documentHtml, openPrint, totalsOf } from "../lib/printDoc.js";
 import { todayISO } from "../lib/time.js";
 import { useWorkspace } from "../store.jsx";
-import { Button, Empty, Field, Kicker, Money } from "../ui.jsx";
+import { Button, Empty, Field, Kicker, Money, PageHead } from "../ui.jsx";
 
 function blankDoc(kind, settings) {
   const year = new Date().getFullYear();
@@ -49,7 +49,7 @@ function Letter({ doc, settings }) {
       <div className="ws-letter-body">
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
           <div>
-            <div className="ws-kicker">From the desk of</div>
+            <div className="ws-kicker">From</div>
             <div style={{ marginTop: 6, lineHeight: 1.6 }}>
               {settings.company}<br />{settings.address1}<br />{settings.address2}
             </div>
@@ -118,7 +118,7 @@ export default function Ledger() {
       if (collection === "quotes") await updateSettings({ quoteCounter: (settings.quoteCounter || 1) + 1 });
       else await updateSettings({ invoiceCounter: (settings.invoiceCounter || 1) + 1 });
     }
-    toast(`${doc.ref} is on the Ledger.`);
+    toast(`${doc.ref} saved.`);
     setDoc(null);
   };
 
@@ -129,7 +129,7 @@ export default function Ledger() {
       settings,
       logo: `${window.location.origin}/assets/logo-cream.png`
     });
-    if (!openPrint(html)) toast("Allow pop-ups to print the letter.");
+    if (!openPrint(html)) toast("Allow pop-ups to print.");
   };
 
   const convert = async (quote) => {
@@ -157,18 +157,16 @@ export default function Ledger() {
     const isQuote = row.ref?.startsWith("TQ");
     const subject = `${isQuote ? "Quotation" : "Invoice"} ${row.ref} — Tunyafrika Xperiences`;
     const body = [
-      `Dear ${row.guestName || "traveller"},`,
+      `Dear ${row.guestName || "guest"},`,
       ``,
-      `From the desk at Victoria Falls — please find ${isQuote ? "your quotation" : "your invoice"} ${row.ref}.`,
+      `Please find ${isQuote ? "your quotation" : "your invoice"} ${row.ref}.`,
       ``,
       row.journey || "",
       row.dates || "",
       `Total: ${settings.currency || "USD"} ${t.total.toFixed(2)}`,
-      isQuote ? `A ${t.depositPct}% deposit confirms the journey.` : `Please use ${row.ref} as payment reference.`,
+      isQuote ? `A ${t.depositPct}% deposit confirms the booking.` : `Please use ${row.ref} as payment reference.`,
       ``,
-      `We will send the letterhead PDF from the desk, or print it from The Ledger.`,
-      ``,
-      `Enquiries · ${settings.email}`,
+      settings.email,
       settings.phone,
       `Tunyafrika Xperiences`
     ].join("\n");
@@ -183,26 +181,22 @@ export default function Ledger() {
 
   return (
     <div>
-      <div className="ws-page-head">
-        <div>
-          <Kicker>The Ledger</Kicker>
-          <h1>Quotations and invoices, in our own hand.</h1>
-          <p className="ws-lede">Tunyafrika letterhead. Flagship xperiences, stays, transfers and border fees as line items. Print to PDF, convert a quote into an invoice, mail the guest. USD, as the Falls prefers.</p>
-        </div>
-        <Button onClick={startNew}>{tab === "quotes" ? "New quotation" : "New invoice"}</Button>
-      </div>
+      <PageHead
+        title="Finance"
+        action={<Button onClick={startNew}>{tab === "quotes" ? "New quote" : "New invoice"}</Button>}
+      />
 
       <div className="ws-folders">
         <button type="button" className={tab === "quotes" ? "is-on" : ""} onClick={() => { setTab("quotes"); setDoc(null); }}>Quotations</button>
         <button type="button" className={tab === "invoices" ? "is-on" : ""} onClick={() => { setTab("invoices"); setDoc(null); }}>Invoices</button>
       </div>
 
-      {!doc && list.length === 0 && <Empty>The Ledger is empty. The first quotation you write becomes the house style.</Empty>}
+      {!doc && list.length === 0 && <Empty>No {tab} yet.</Empty>}
 
       {!doc && list.length > 0 && (
         <table className="ws-table">
           <thead>
-            <tr><th>Ref</th><th>Guest</th><th>Journey</th><th>Total</th><th>Status</th><th></th></tr>
+            <tr><th>Ref</th><th>Guest</th><th>Package</th><th>Total</th><th>Status</th><th></th></tr>
           </thead>
           <tbody>
             {list.map((row) => {
@@ -233,7 +227,7 @@ export default function Ledger() {
         <div className="ws-grid-2 ws-paper-field">
           <div className="ws-panel paper">
             <Kicker>{doc._kind === "invoice" || doc.ref?.startsWith("TI") ? "Invoice" : "Quotation"} {doc.ref}</Kicker>
-            <h2 style={{ color: "#0d2b1e" }}>Write the letter</h2>
+            <h2 style={{ color: "#0d2b1e" }}>{doc.ref}</h2>
             <Field label="Guest">
               <input value={doc.guestName} onChange={(e) => setDoc({ ...doc, guestName: e.target.value })} />
             </Field>
@@ -241,17 +235,17 @@ export default function Ledger() {
               <input value={doc.guestEmail} onChange={(e) => setDoc({ ...doc, guestEmail: e.target.value })} />
             </Field>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-              <Field label="Travelling as">
+            <Field label="Guests">
                 <input value={doc.pax} onChange={(e) => setDoc({ ...doc, pax: e.target.value })} />
               </Field>
               <Field label="Dates">
                 <input value={doc.dates} onChange={(e) => setDoc({ ...doc, dates: e.target.value })} />
               </Field>
             </div>
-            <Field label="Journey">
+            <Field label="Package">
               <input value={doc.journey} onChange={(e) => setDoc({ ...doc, journey: e.target.value })} />
             </Field>
-            <Field label="Link an existing journey">
+            <Field label="Link booking">
               <select value={doc.journeyId || ""} onChange={(e) => {
                 const j = journeys.find((x) => x.id === e.target.value);
                 setDoc({
@@ -290,20 +284,18 @@ export default function Ledger() {
               <input type="number" value={doc.depositPercent} onChange={(e) => setDoc({ ...doc, depositPercent: Number(e.target.value) })} />
             </Field>
             <Field label="Terms">
-              <textarea value={doc.terms} onChange={(e) => setDoc({ ...doc, terms: e.target.value })} placeholder="Leave blank for the house default" />
+              <textarea value={doc.terms} onChange={(e) => setDoc({ ...doc, terms: e.target.value })} />
             </Field>
             <div className="ws-actions">
-              <Button onClick={save}>Save to the Ledger</Button>
-              <Button kind="ghost" onClick={() => print(doc, doc._kind || kind)}>Print letterhead</Button>
+              <Button onClick={save}>Save</Button>
+              <Button kind="ghost" onClick={() => print(doc, doc._kind || kind)}>Print</Button>
               <Button kind="ghost" onClick={() => setDoc(null)}>Close</Button>
               {doc.id && <Button kind="warn" onClick={() => { remove(kind === "quote" ? "quotes" : "invoices", doc.id); setDoc(null); }}>Remove</Button>}
             </div>
           </div>
           <div>
             <div className="ws-panel" style={{ marginBottom: 12 }}>
-              <Kicker>Rate card</Kicker>
-              <h2>Tap to add</h2>
-              <p className="ws-lede">Indicative starting rates — change any figure on the letter. These are the xperiences this house actually sells.</p>
+              <Kicker>Rates</Kicker>
               {Object.entries(groupedCard).map(([group, items]) => (
                 <div key={group} style={{ marginTop: 12 }}>
                   <div className="ws-kicker">{group}</div>

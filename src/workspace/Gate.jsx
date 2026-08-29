@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useWorkspace, workspaceKey } from "./store.jsx";
-import { Button, Kicker } from "./ui.jsx";
+import { Button } from "./ui.jsx";
 
 export default function Gate() {
   const { crew, signIn } = useWorkspace();
@@ -14,11 +14,11 @@ export default function Gate() {
   const enter = () => {
     const expected = workspaceKey();
     if (key.trim() !== expected) {
-      setError("That is not the house key. Ask whoever opened the Basecamp.");
+      setError("Wrong password.");
       return;
     }
     if (!picked) {
-      setError("Choose your seat at the desk.");
+      setError("Select a user.");
       return;
     }
     signIn(picked, stay);
@@ -29,12 +29,8 @@ export default function Gate() {
       <img className="bg" src="/assets/br-falls-aerial2.jpg" alt="" />
       <div className="veil" />
       <div className="ws-gate-card">
-        <Kicker>Tunyafrika Workspace</Kicker>
-        <h1>The Basecamp</h1>
-        <p className="ws-gate-copy">
-          Where the journey is built before the spray. Staff only — the public site stays on the other side of this door.
-        </p>
-        <Kicker>Who is at the desk</Kicker>
+        <div className="ws-kicker">Tunyafrika</div>
+        <h1>Admin</h1>
         <div className="ws-crew-grid">
           {people.map((c) => (
             <button
@@ -46,30 +42,30 @@ export default function Gate() {
               <span className="ws-mono">{c.initials}</span>
               <span>
                 <strong style={{ display: "block", fontWeight: 500, color: "#faf3e8" }}>{c.name}</strong>
-                <span className="role">{c.role}</span>
+                <span className="role">Admin</span>
               </span>
             </button>
           ))}
         </div>
         <div className="ws-field">
-          <span>House key</span>
+          <span>Password</span>
           <input
             type="password"
             autoComplete="current-password"
             value={key}
             onChange={(e) => { setKey(e.target.value); setError(""); }}
             onKeyDown={(e) => e.key === "Enter" && enter()}
-            placeholder="The phrase that opens the desk"
+            placeholder="Password"
           />
         </div>
         <label className="ws-check">
           <input type="checkbox" checked={stay} onChange={(e) => setStay(e.target.checked)} />
-          Keep me at the desk on this machine
+          Stay signed in
         </label>
         {error && <p style={{ color: "#e07a4c", fontSize: 13, margin: "12px 0 0" }}>{error}</p>}
         <div className="ws-actions">
-          <Button onClick={enter}>Enter the Basecamp</Button>
-          <a href="/" className="ws-btn ghost" style={{ textDecoration: "none", display: "inline-flex", alignItems: "center" }}>Back to the Falls</a>
+          <Button onClick={enter}>Sign in</Button>
+          <a href="/" className="ws-btn ghost" style={{ textDecoration: "none", display: "inline-flex", alignItems: "center" }}>Back to site</a>
         </div>
       </div>
     </div>

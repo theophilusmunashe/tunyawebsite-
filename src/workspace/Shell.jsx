@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Navigate, NavLink, Route, Routes, useNavigate } from "react-router-dom";
-import { catParts, greeting, sprayForMonth } from "./lib/time.js";
+import { catParts, sprayForMonth } from "./lib/time.js";
 import { useWorkspace } from "./store.jsx";
 import Pulse from "./views/Pulse.jsx";
 import Vault from "./views/Vault.jsx";
@@ -15,21 +15,21 @@ import Crew from "./views/Crew.jsx";
 import Settings from "./views/Settings.jsx";
 
 const NAV = [
-  { section: "The desk", items: [
-    { to: "/admin", label: "Pulse", end: true },
-    { to: "/admin/dispatch", label: "Dispatch" },
-    { to: "/admin/manifest", label: "Manifest" },
-    { to: "/admin/brief", label: "Thunder Brief" }
+  { section: "Today", items: [
+    { to: "/admin", label: "Dashboard", end: true },
+    { to: "/admin/dispatch", label: "Tasks" },
+    { to: "/admin/manifest", label: "Schedule" },
+    { to: "/admin/brief", label: "Brief" }
   ]},
-  { section: "The journey", items: [
-    { to: "/admin/journeys", label: "Journeys" },
-    { to: "/admin/border", label: "Border Desk" },
-    { to: "/admin/spray", label: "Spray Index" }
+  { section: "Guests", items: [
+    { to: "/admin/journeys", label: "Bookings" },
+    { to: "/admin/border", label: "Visas" },
+    { to: "/admin/spray", label: "Season" }
   ]},
-  { section: "The house", items: [
-    { to: "/admin/vault", label: "The Vault" },
-    { to: "/admin/ledger", label: "The Ledger" },
-    { to: "/admin/crew", label: "Crew" },
+  { section: "Office", items: [
+    { to: "/admin/vault", label: "Files" },
+    { to: "/admin/ledger", label: "Finance" },
+    { to: "/admin/crew", label: "Team" },
     { to: "/admin/settings", label: "Settings" }
   ]}
 ];
@@ -48,7 +48,7 @@ export default function Shell() {
 
   useEffect(() => {
     const prev = document.title;
-    document.title = "Tunyafrika Workspace — The Basecamp";
+    document.title = "Tunyafrika Admin";
     const robots = document.createElement("meta");
     robots.name = "robots";
     robots.content = "noindex, nofollow";
@@ -64,7 +64,7 @@ export default function Shell() {
       <aside className={`ws-side${open ? " is-open" : ""}`}>
         <div className="ws-brand">
           <img src="/assets/logo-cream.png" alt="Tunyafrika" />
-          <div className="ws-kicker">The Basecamp</div>
+          <div className="ws-kicker">Admin</div>
         </div>
         <nav className="ws-nav" onClick={() => setOpen(false)}>
           {NAV.map((group) => (
@@ -79,8 +79,8 @@ export default function Shell() {
           ))}
         </nav>
         <div className="ws-side-foot">
-          <a href="/">Leave for the public site</a>
-          <button type="button" onClick={() => { signOut(); navigate("/admin"); }}>Lock the desk</button>
+          <a href="/">Website</a>
+          <button type="button" onClick={() => { signOut(); navigate("/admin"); }}>Sign out</button>
         </div>
       </aside>
       <div className="ws-main">
@@ -90,15 +90,15 @@ export default function Shell() {
               <span /><span /><span />
             </button>
             <div>
-              <div className="ws-kicker">Central Africa Time</div>
+              <div className="ws-kicker">CAT</div>
               <div style={{ fontSize: 14 }}>{clock.weekday} {clock.day} {clock.month} · {clock.hour}:{clock.minute}</div>
             </div>
-            <div className="ws-chip">{spray.label} · curtain {spray.curtain}%</div>
+            <div className="ws-chip">{spray.label}</div>
           </div>
           <div className="ws-you">
             <span className="ws-mono">{you?.initials || "—"}</span>
             <span>
-              <div style={{ fontSize: 11, letterSpacing: "0.18em", textTransform: "uppercase", color: "#b3955c" }}>{greeting()}</div>
+              <div className="ws-kicker">Admin</div>
               {you?.name}
             </span>
           </div>

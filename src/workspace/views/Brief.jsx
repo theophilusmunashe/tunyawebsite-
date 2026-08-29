@@ -1,9 +1,9 @@
 import { useMemo } from "react";
 import { esc } from "../lib/ids.js";
 import { openPrint } from "../lib/printDoc.js";
-import { catParts, greeting, prettyDate, sprayForMonth, todayISO } from "../lib/time.js";
+import { catParts, prettyDate, sprayForMonth, todayISO } from "../lib/time.js";
 import { useWorkspace } from "../store.jsx";
-import { Button, CrewName, Kicker, PriorityMark } from "../ui.jsx";
+import { Button, PageHead, PriorityMark } from "../ui.jsx";
 
 export default function Brief() {
   const { you, tasks, movements, journeys, settings, upsert, briefs, toast } = useWorkspace();
@@ -11,24 +11,21 @@ export default function Brief() {
   const spray = sprayForMonth();
   const clock = catParts();
   const openTasks = tasks.filter((t) => t.status !== "done");
-  const thunder = openTasks.filter((t) => t.priority === "thunder");
+  const high = openTasks.filter((t) => t.priority === "thunder");
   const todayMove = movements.filter((m) => m.whenDate === today).sort((a, b) => (a.whenTime || "").localeCompare(b.whenTime || ""));
   const arriving = journeys.filter((j) => j.arrive === today || (j.stage === "confirmed" && j.arrive && j.arrive <= today && j.depart >= today));
 
   const body = useMemo(() => ({
-    title: `Thunder Brief · ${prettyDate(today)}`,
+    title: `Brief · ${prettyDate(today)}`,
     chalkboard: settings.chalkboard || "",
-    river: spray.river,
-    sell: spray.sell,
-    hold: spray.hold,
     moves: todayMove,
-    thunder,
+    high,
     arriving
-  }), [settings.chalkboard, spray, todayMove, thunder, arriving, today]);
+  }), [settings.chalkboard, todayMove, high, arriving, today]);
 
   const save = async () => {
     await upsert("briefs", { date: today, ...body, author: you?.name });
-    toast("Brief pinned to the house memory.");
+    toast("Brief saved.");
   };
 
   const print = () => {
@@ -36,55 +33,39 @@ export default function Brief() {
       <style>
         body { font-family: Poppins, sans-serif; color: #0d2b1e; padding: 28px; }
         .k { letter-spacing: .32em; text-transform: uppercase; color: #b3955c; font-size: 11px; }
-        h1 { font-family: "Cormorant Garamond", Georgia, serif; font-size: 42px; font-weight: 500; }
+        h1 { font-family: "Cormorant Garamond", Georgia, serif; font-size: 36px; font-weight: 500; }
         li { line-height: 1.7; }
       </style></head><body>
-      <div class="k">Tunyafrika Basecamp</div>
+      <div class="k">Tunyafrika Admin</div>
       <h1>${esc(body.title)}</h1>
-      <p>${esc(greeting())} from the deck. ${esc(clock.weekday)} in Victoria Falls. ${esc(spray.label)}.</p>
-      <p>${esc(body.chalkboard)}</p>
-      <div class="k">The river</div><p>${esc(body.river)}</p>
-      <div class="k">Movements</div>
-      <ul>${todayMove.map((m) => `<li>${esc(m.whenTime)} · ${esc(m.kind)} — ${esc(m.detail)}</li>`).join("") || "<li>None timed.</li>"}</ul>
-      <div class="k">Thunder</div>
-      <ul>${thunder.map((t) => `<li>${esc(t.title)}</li>`).join("") || "<li>None.</li>"}</ul>
+      <p>${esc(clock.weekday)} · ${esc(spray.label)}</p>
+      ${body.chalkboard ? `<p>${esc(body.chalkboard)}</p>` : ""}
+      <div class="k">Schedule</div>
+      <ul>${todayMove.map((m) => `<li>${esc(m.whenTime)} · ${esc(m.kind)} — ${esc(m.detail)}</li>`).join("") || "<li>None</li>"}</ul>
+      <div class="k">High priority</div>
+      <ul>${high.map((t) => `<li>${esc(t.title)}</li>`).join("") || "<li>None</li>"}</ul>
       </body></html>`;
     openPrint(html);
   };
 
   return (
     <div>
-      <div className="ws-page-head">
-        <div>
-          <Kicker>Thunder Brief</Kicker>
-          <h1>The morning page.</h1>
-          <p className="ws-lede">One sheet for the huddle before the first pickup. It writes itself from the Pulse, the Manifest and the chalkboard — then you print it or pin it.</p>
-        </div>
-        <div className="ws-actions" style={{ marginTop: 0 }}>
-          <Button kind="ghost" onClick={save}>Pin this brief</Button>
-          <Button onClick={print}>Print the page</Button>
-        </div>
-      </div>
+      <PageHead
+        title="Brief"
+        action={
+          <div className="ws-actions" style={{ marginTop: 0 }}>
+            <Button kind="ghost" onClick={save}>Save</Button>
+            <Button onClick={print}>Print</Button>
+          </div>
+        }
+      />
 
       <div className="ws-panel paper">
-        <Kicker>Tunyafrika Basecamp · CAT</Kicker>
+        <div className="ws-kicker">{prettyDate(today)} · {spray.label}</div>
         <h2 style={{ color: "#0d2b1e" }}>{body.title}</h2>
-        <p>{greeting()}. {spray.label}. Written as if {you?.name?.split(" ")[0]} is standing on the deck.</p>
         {body.chalkboard && <p style={{ fontStyle: "italic" }}>{body.chalkboard}</p>}
-        <Kicker>The river</Kicker>
-        <p>{body.river}</p>
-        <div className="ws-grid-2">
-          <div>
-            <Kicker>Sell</Kicker>
-            <ul>{body.sell.map((s) => <li key={s}>{s}</li>)}</ul>
-          </div>
-          <div>
-            <Kicker>Hold back</Kicker>
-            <ul>{body.hold.map((s) => <li key={s}>{s}</li>)}</ul>
-          </div>
-        </div>
-        <Kicker>Movements today</Kicker>
-        {todayMove.length === 0 && <p>None timed.</p>}
+        <div className="ws-kicker">Schedule</div>
+        {todayMove.length === 0 && <p>Nothing scheduled.</p>}
         {todayMove.map((m) => (
           <div className="ws-row" key={m.id}>
             <div>
@@ -93,8 +74,9 @@ export default function Brief() {
             </div>
           </div>
         ))}
-        <Kicker>Thunder</Kicker>
-        {thunder.map((t) => (
+        <div className="ws-kicker">High priority</div>
+        {high.length === 0 && <p>None.</p>}
+        {high.map((t) => (
           <div className="ws-row" key={t.id}>
             <div>
               <PriorityMark id="thunder" />
@@ -102,7 +84,8 @@ export default function Brief() {
             </div>
           </div>
         ))}
-        <Kicker>In the house</Kicker>
+        <div className="ws-kicker">Guests</div>
+        {arriving.length === 0 && <p>None.</p>}
         {arriving.map((j) => (
           <div className="ws-row" key={j.id}>
             <div>
@@ -115,8 +98,7 @@ export default function Brief() {
 
       {briefs.length > 0 && (
         <div className="ws-panel" style={{ marginTop: 16 }}>
-          <Kicker>Pinned</Kicker>
-          <h2>Earlier mornings</h2>
+          <div className="ws-kicker">Saved</div>
           {briefs.map((b) => (
             <div className="ws-row" key={b.id}>
               <div>

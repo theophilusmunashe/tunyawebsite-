@@ -8,18 +8,18 @@ export const FOLDERS = [
   "Finance",
   "Marketing",
   "Guide notes",
-  "House"
+  "General"
 ];
 
 export const PRIORITIES = [
-  { id: "mist", label: "Mist", hint: "When you can" },
-  { id: "spray", label: "Spray", hint: "This week" },
-  { id: "thunder", label: "Thunder", hint: "Today" }
+  { id: "mist", label: "Low", hint: "When you can" },
+  { id: "spray", label: "Medium", hint: "This week" },
+  { id: "thunder", label: "High", hint: "Today" }
 ];
 
 export const TASK_STATUS = [
   { id: "open", label: "Open" },
-  { id: "on-it", label: "On it" },
+  { id: "on-it", label: "In progress" },
   { id: "done", label: "Done" }
 ];
 
@@ -27,7 +27,7 @@ export const JOURNEY_STAGES = [
   { id: "enquiry", label: "Enquiry" },
   { id: "quoted", label: "Quoted" },
   { id: "confirmed", label: "Confirmed" },
-  { id: "in-country", label: "In-country" },
+  { id: "in-country", label: "On trip" },
   { id: "complete", label: "Complete" }
 ];
 

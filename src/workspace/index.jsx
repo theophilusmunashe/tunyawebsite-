@@ -9,7 +9,7 @@ function GateOrDesk() {
     return (
       <div className="ws-gate">
         <div className="veil" />
-        <div className="ws-kicker" style={{ position: "relative" }}>Opening the Basecamp…</div>
+        <div className="ws-kicker" style={{ position: "relative" }}>Loading…</div>
       </div>
     );
   }
