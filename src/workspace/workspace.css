@@ -548,6 +548,21 @@ a.ws-btn.ghost:hover,
   max-width: 360px;
 }
 
+.ws-letter-wrap {
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid rgba(13, 43, 30, 0.12);
+  background: #fff;
+}
+.ws-letter-frame {
+  width: 794px;
+  height: 1123px;
+  border: 0;
+  background: #fff;
+  display: block;
+  transform-origin: top left;
+  transform: scale(var(--letter-scale, 1));
+}
 .ws-letter {
   background: #fff;
   color: #0d2b1e;

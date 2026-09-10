@@ -1,8 +1,8 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { RATE_CARD } from "../data/catalog.js";
 import { uid, nextRef } from "../lib/ids.js";
 import { notifyPerson } from "../lib/notify.js";
-import { documentHtml, openPrint, totalsOf } from "../lib/printDoc.js";
+import { documentHtml, downloadPdf, openPrint, totalsOf } from "../lib/printDoc.js";
 import { todayISO } from "../lib/time.js";
 import { useWorkspace } from "../store.jsx";
 import { Button, Empty, Field, Kicker, Money, PageHead } from "../ui.jsx";
@@ -30,57 +30,42 @@ function blankDoc(kind, settings) {
 }
 
 function Letter({ doc, settings }) {
-  const t = totalsOf(doc, settings);
-  const logo = `${window.location.origin}/assets/logo-cream.png`;
-  const isQuote = (doc.kind || "quote") === "quote" || !!doc.ref?.startsWith("TQ");
+  const wrapRef = useRef(null);
+  const frameRef = useRef(null);
+  const kind = doc._kind === "invoice" || doc.ref?.startsWith("TI") ? "invoice" : "quote";
+  const html = documentHtml({
+    kind,
+    doc,
+    settings,
+    logo: `${window.location.origin}/assets/logo-cream.png`
+  });
+  const fit = () => {
+    const frame = frameRef.current;
+    const wrap = wrapRef.current;
+    if (!frame || !wrap) return;
+    const sheet = frame.contentDocument?.querySelector(".sheet");
+    const height = sheet?.scrollHeight || 1123;
+    const scale = wrap.clientWidth / 794;
+    frame.style.height = `${height}px`;
+    wrap.style.setProperty("--letter-scale", String(scale));
+    wrap.style.height = `${Math.ceil(height * scale)}px`;
+  };
+  useEffect(() => {
+    const wrap = wrapRef.current;
+    if (!wrap || typeof ResizeObserver === "undefined") return undefined;
+    const observer = new ResizeObserver(() => fit());
+    observer.observe(wrap);
+    return () => observer.disconnect();
+  }, [html]);
   return (
-    <div className="ws-letter">
-      <div className="ws-letter-mast">
-        <div>
-          <img src={logo} alt="Tunyafrika" />
-          <div className="ws-kicker" style={{ marginTop: 8 }}>Xpectional Xperiences</div>
-        </div>
-        <div style={{ textAlign: "right" }}>
-          <div className="ws-kicker">{isQuote ? "Quotation" : "Invoice"}</div>
-          <div className="ws-serif" style={{ fontSize: 32 }}>{doc.ref}</div>
-          <div style={{ opacity: 0.75, fontSize: 12 }}>{doc.issued}</div>
-        </div>
-      </div>
-      <div className="ws-letter-body">
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-          <div>
-            <div className="ws-kicker">From</div>
-            <div style={{ marginTop: 6, lineHeight: 1.6 }}>
-              {settings.company}<br />{settings.address1}<br />{settings.address2}
-            </div>
-          </div>
-          <div>
-            <div className="ws-kicker">{isQuote ? "Prepared for" : "Billed to"}</div>
-            <div style={{ marginTop: 6, lineHeight: 1.6 }}>
-              {doc.guestName || "Guest"}<br />{doc.guestEmail}<br />{doc.pax}<br />{doc.dates}
-            </div>
-          </div>
-        </div>
-        <table>
-          <thead>
-            <tr><th>Description</th><th className="num">Qty</th><th className="num">Unit</th><th className="num">Amount</th></tr>
-          </thead>
-          <tbody>
-            {(doc.lines || []).map((line) => (
-              <tr key={line.id}>
-                <td>{line.description || "—"}</td>
-                <td className="num">{line.qty}</td>
-                <td className="num"><Money value={line.unit} currency={settings.currency} /></td>
-                <td className="num"><Money value={(line.qty || 1) * (line.unit || 0)} currency={settings.currency} /></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <div style={{ marginLeft: "auto", width: 220, marginTop: 12 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", padding: "4px 0" }}><span>Total</span><strong><Money value={t.total} currency={settings.currency} /></strong></div>
-          <div style={{ display: "flex", justifyContent: "space-between", padding: "4px 0", color: "#8a7040" }}><span>Deposit {t.depositPct}%</span><span><Money value={t.deposit} currency={settings.currency} /></span></div>
-        </div>
-      </div>
+    <div className="ws-letter-wrap" ref={wrapRef}>
+      <iframe
+        ref={frameRef}
+        title="Document preview"
+        className="ws-letter-frame"
+        srcDoc={html}
+        onLoad={fit}
+      />
     </div>
   );
 }
@@ -89,6 +74,7 @@ export default function Ledger() {
   const { quotes, invoices, journeys, settings, upsert, updateSettings, remove, toast } = useWorkspace();
   const [tab, setTab] = useState("quotes");
   const [doc, setDoc] = useState(null);
+  const [busyPdf, setBusyPdf] = useState(false);
 
   const list = tab === "quotes" ? quotes : invoices;
   const kind = tab === "quotes" ? "quote" : "invoice";
@@ -130,6 +116,23 @@ export default function Ledger() {
       logo: `${window.location.origin}/assets/logo-cream.png`
     });
     if (!openPrint(html)) toast("Allow pop-ups to print.");
+  };
+
+  const download = async (row, as) => {
+    setBusyPdf(true);
+    try {
+      await downloadPdf({
+        kind: as,
+        doc: row,
+        settings,
+        filename: `${row.ref || as}.pdf`
+      });
+      toast(`${row.ref} downloaded.`);
+    } catch (err) {
+      toast(err.message || "Could not create the PDF.");
+    } finally {
+      setBusyPdf(false);
+    }
   };
 
   const convert = async (quote) => {
@@ -211,6 +214,7 @@ export default function Ledger() {
                   <td>
                     <div className="ws-actions" style={{ marginTop: 0 }}>
                       <Button kind="ghost" className="slim" onClick={() => setDoc({ ...row, _kind: kind })}>Open</Button>
+                      <Button kind="ghost" className="slim" disabled={busyPdf} onClick={() => download(row, kind)}>PDF</Button>
                       <Button kind="ghost" className="slim" onClick={() => print(row, kind)}>Print</Button>
                       <Button kind="ghost" className="slim" onClick={() => mailGuest(row)}>Mail</Button>
                       {kind === "quote" && row.status !== "invoiced" && <Button className="slim" onClick={() => convert(row)}>To invoice</Button>}
@@ -288,6 +292,7 @@ export default function Ledger() {
             </Field>
             <div className="ws-actions">
               <Button onClick={save}>Save</Button>
+              <Button kind="ghost" disabled={busyPdf} onClick={() => download(doc, doc._kind || kind)}>{busyPdf ? "Preparing…" : "Download PDF"}</Button>
               <Button kind="ghost" onClick={() => print(doc, doc._kind || kind)}>Print</Button>
               <Button kind="ghost" onClick={() => setDoc(null)}>Close</Button>
               {doc.id && <Button kind="warn" onClick={() => { remove(kind === "quote" ? "quotes" : "invoices", doc.id); setDoc(null); }}>Remove</Button>}

@@ -1,5 +1,45 @@
+import html2canvas from "html2canvas";
+import { jsPDF } from "jspdf";
 import { esc } from "./ids.js";
 import { prettyDate } from "./time.js";
+
+const FONT_HREF = "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500&family=Poppins:wght@300;400;600&display=swap";
+
+const SHEET_CSS = `
+.sheet {
+  width: 794px;
+  background: #fff;
+  font-family: Poppins, "Segoe UI", sans-serif;
+  color: #0d2b1e;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+.sheet * { box-sizing: border-box; }
+.sheet .mast { background: #04301f; color: #faf3e8; padding: 28px 32px; display: flex; justify-content: space-between; gap: 24px; align-items: center; }
+.sheet .mast img { height: 52px; }
+.sheet .kicker { font-size: 10px; letter-spacing: 0.42em; text-transform: uppercase; color: #b3955c; }
+.sheet h1 { font-family: "Cormorant Garamond", Georgia, serif; font-weight: 500; font-size: 42px; margin: 6px 0 0; }
+.sheet .meta { text-align: right; font-size: 13px; line-height: 1.7; }
+.sheet .body { padding: 28px 32px 12px; }
+.sheet .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-bottom: 28px; }
+.sheet .label { font-size: 10px; letter-spacing: 0.28em; text-transform: uppercase; color: #b3955c; }
+.sheet .block { margin-top: 6px; font-size: 14px; line-height: 1.65; font-weight: 300; }
+.sheet table { width: 100%; border-collapse: collapse; }
+.sheet th { text-align: left; font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: #b3955c; border-bottom: 1px solid #b3955c; padding: 8px 0; }
+.sheet td { padding: 12px 0; border-bottom: 1px solid rgba(13,43,30,0.12); font-size: 14px; vertical-align: top; }
+.sheet .num { text-align: right; white-space: nowrap; }
+.sheet .muted { color: rgba(13,43,30,0.5); font-size: 11px; margin-top: 3px; }
+.sheet .totals { width: 280px; margin: 18px 0 0 auto; }
+.sheet .totals div { display: flex; justify-content: space-between; padding: 6px 0; font-size: 14px; }
+.sheet .grand { border-top: 1px solid #b3955c; margin-top: 8px; padding-top: 10px; font-weight: 600; }
+.sheet .terms { margin-top: 36px; font-size: 12px; font-weight: 300; line-height: 1.7; color: rgba(13,43,30,0.75); }
+.sheet .foot { margin-top: 28px; padding: 18px 32px 28px; border-top: 1px solid rgba(179,149,92,0.5); font-size: 12px; color: rgba(13,43,30,0.7); display: flex; justify-content: space-between; gap: 16px; }
+.sheet .gold { color: #b3955c; }
+`;
+
+function logoSrc(logo) {
+  return String(logo).startsWith("data:") ? logo : esc(logo);
+}
 
 function money(n, currency = "USD") {
   const value = Number(n) || 0;
@@ -36,31 +76,12 @@ export function documentHtml({ kind, doc, settings, logo }) {
 <head>
   <meta charset="utf-8" />
   <title>${esc(title)} ${esc(doc.ref || "")}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="${FONT_HREF}" rel="stylesheet" />
   <style>
-    @page { margin: 16mm; }
-    * { box-sizing: border-box; }
-    body { margin: 0; font-family: Poppins, "Segoe UI", sans-serif; color: #0d2b1e; background: #fff; }
-    .sheet { max-width: 820px; margin: 0 auto; }
-    .mast { background: #04301f; color: #faf3e8; padding: 28px 32px; display: flex; justify-content: space-between; gap: 24px; align-items: center; }
-    .mast img { height: 52px; }
-    .kicker { font-size: 10px; letter-spacing: 0.42em; text-transform: uppercase; color: #b3955c; }
-    h1 { font-family: "Cormorant Garamond", Georgia, serif; font-weight: 500; font-size: 42px; margin: 6px 0 0; }
-    .meta { text-align: right; font-size: 13px; line-height: 1.7; }
-    .body { padding: 28px 32px 12px; }
-    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-bottom: 28px; }
-    .label { font-size: 10px; letter-spacing: 0.28em; text-transform: uppercase; color: #b3955c; }
-    .block { margin-top: 6px; font-size: 14px; line-height: 1.65; font-weight: 300; }
-    table { width: 100%; border-collapse: collapse; }
-    th { text-align: left; font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: #b3955c; border-bottom: 1px solid #b3955c; padding: 8px 0; }
-    td { padding: 12px 0; border-bottom: 1px solid rgba(13,43,30,0.12); font-size: 14px; vertical-align: top; }
-    .num { text-align: right; white-space: nowrap; }
-    .muted { color: rgba(13,43,30,0.5); font-size: 11px; margin-top: 3px; }
-    .totals { width: 280px; margin: 18px 0 0 auto; }
-    .totals div { display: flex; justify-content: space-between; padding: 6px 0; font-size: 14px; }
-    .grand { border-top: 1px solid #b3955c; margin-top: 8px; padding-top: 10px; font-weight: 600; }
-    .terms { margin-top: 36px; font-size: 12px; font-weight: 300; line-height: 1.7; color: rgba(13,43,30,0.75); }
-    .foot { margin-top: 28px; padding: 18px 32px 28px; border-top: 1px solid rgba(179,149,92,0.5); font-size: 12px; color: rgba(13,43,30,0.7); display: flex; justify-content: space-between; gap: 16px; }
-    .gold { color: #b3955c; }
+    @page { margin: 0; }
+    html, body { margin: 0; padding: 0; background: #fff; }
+    ${SHEET_CSS}
     @media print { body { background: #fff; } .noprint { display: none !important; } }
   </style>
 </head>
@@ -68,7 +89,7 @@ export function documentHtml({ kind, doc, settings, logo }) {
   <div class="sheet">
     <div class="mast">
       <div>
-        ${logo ? `<img src="${esc(logo)}" alt="Tunyafrika" />` : `<div class="kicker">Tunyafrika Xperiences</div>`}
+        ${logo ? `<img src="${logoSrc(logo)}" alt="Tunyafrika" />` : `<div class="kicker">Tunyafrika Xperiences</div>`}
         <div class="kicker" style="margin-top:10px">Xpectional Xperiences</div>
       </div>
       <div class="meta">
@@ -80,7 +101,7 @@ export function documentHtml({ kind, doc, settings, logo }) {
     <div class="body">
       <div class="grid">
         <div>
-          <div class="label">From the desk of</div>
+          <div class="label">From</div>
           <div class="block">
             ${esc(settings.company || "Tunyafrika Xperiences")}<br />
             ${esc(settings.address1 || "")}<br />
@@ -139,6 +160,123 @@ export function openPrint(html) {
   };
   setTimeout(done, 350);
   return true;
+}
+
+function wait(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function waitForAssets(doc) {
+  const links = [...(doc.querySelectorAll?.('link[rel="stylesheet"]') || [])];
+  await Promise.all(links.map((link) => (
+    link.sheet
+      ? Promise.resolve()
+      : new Promise((resolve) => {
+        link.onload = () => resolve();
+        link.onerror = () => resolve();
+      })
+  )));
+  const imgs = [...(doc.images || [])];
+  await Promise.all(imgs.map((img) => (
+    img.complete
+      ? Promise.resolve()
+      : new Promise((resolve) => {
+        img.onload = () => resolve();
+        img.onerror = () => resolve();
+      })
+  )));
+  if (doc.fonts?.load) {
+    await Promise.all([
+      doc.fonts.load("300 14px Poppins"),
+      doc.fonts.load("400 14px Poppins"),
+      doc.fonts.load("600 14px Poppins"),
+      doc.fonts.load('500 42px "Cormorant Garamond"')
+    ]).catch(() => {});
+  }
+  if (doc.fonts?.ready) await doc.fonts.ready;
+  await wait(280);
+}
+
+export async function logoDataUrl() {
+  const src = `${window.location.origin}/assets/logo-cream.png`;
+  const res = await fetch(src);
+  const blob = await res.blob();
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(blob);
+  });
+}
+
+function canvasHasInk(canvas) {
+  const ctx = canvas.getContext("2d");
+  const sample = ctx.getImageData(0, 0, Math.min(canvas.width, 160), Math.min(canvas.height, 80)).data;
+  for (let i = 0; i < sample.length; i += 4) {
+    if (sample[i] < 248 || sample[i + 1] < 248 || sample[i + 2] < 248) return true;
+  }
+  return false;
+}
+
+function loadIframe(html) {
+  const iframe = document.createElement("iframe");
+  iframe.setAttribute("aria-hidden", "true");
+  iframe.style.cssText = "position:fixed;left:0;top:0;width:794px;height:1123px;opacity:0.01;pointer-events:none;border:0;background:#fff;z-index:0;";
+  document.body.appendChild(iframe);
+  iframe.srcdoc = html;
+  return iframe;
+}
+
+export async function downloadPdf({ kind, doc, settings, filename }) {
+  const logo = await logoDataUrl().catch(() => `${window.location.origin}/assets/logo-cream.png`);
+  const html = documentHtml({ kind, doc, settings, logo });
+  const iframe = loadIframe(html);
+  try {
+    await new Promise((resolve) => {
+      if (iframe.contentDocument?.readyState === "complete" && iframe.contentDocument.querySelector(".sheet")) resolve();
+      else iframe.onload = () => resolve();
+      setTimeout(resolve, 400);
+    });
+    const idoc = iframe.contentDocument;
+    await waitForAssets(idoc);
+    const target = idoc.querySelector(".sheet");
+    if (!target) throw new Error("Could not render the document.");
+    iframe.style.height = `${Math.max(target.scrollHeight, 1123)}px`;
+    await wait(80);
+    const canvas = await html2canvas(target, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: "#ffffff",
+      logging: false,
+      width: 794,
+      windowWidth: 794,
+      height: target.scrollHeight,
+      windowHeight: target.scrollHeight,
+      scrollX: 0,
+      scrollY: 0
+    });
+    if (!canvasHasInk(canvas)) throw new Error("Could not create the PDF.");
+    const imgData = canvas.toDataURL("image/png");
+    const pdf = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
+    const pageW = pdf.internal.pageSize.getWidth();
+    const pageH = pdf.internal.pageSize.getHeight();
+    const imgW = pageW;
+    const imgH = (canvas.height * imgW) / canvas.width;
+    let y = 0;
+    let left = imgH;
+    pdf.addImage(imgData, "PNG", 0, y, imgW, imgH, undefined, "FAST");
+    left -= pageH;
+    while (left > 1.5) {
+      y -= pageH;
+      pdf.addPage();
+      pdf.addImage(imgData, "PNG", 0, y, imgW, imgH, undefined, "FAST");
+      left -= pageH;
+    }
+    pdf.save(filename || `${doc.ref || "document"}.pdf`);
+    return true;
+  } finally {
+    iframe.remove();
+  }
 }
 
 export function totalsOf(doc, settings) {
