@@ -136,7 +136,7 @@
   flex-shrink: 0;
 }
 
-.ws-field { display: grid; gap: 7px; margin-top: 14px; }
+.ws-field { display: grid; gap: 7px; margin-top: 14px; min-width: 0; }
 .ws-field span {
   font-size: 10px;
   letter-spacing: 0.26em;
@@ -147,11 +147,13 @@
 .ws-field select,
 .ws-field textarea {
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
   background: rgba(250, 243, 232, 0.08);
   border: 1px solid rgba(212, 181, 110, 0.4);
   color: #faf3e8;
   padding: 10px 12px;
-  font-size: 15px;
+  font-size: 16px;
   outline: none;
   caret-color: #d4b56e;
 }
@@ -314,7 +316,9 @@ a.ws-btn.ghost:hover,
 }
 .ws-side-foot a:hover, .ws-side-foot button:hover { color: #e4c98a !important; }
 
-.ws-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.ws-main { flex: 1; min-width: 0; display: flex; flex-direction: column; overflow-x: clip; }
+
+.ws-page { padding: 24px 28px 56px; min-width: 0; max-width: 100%; }
 
 .ws-top {
   display: flex;
@@ -338,8 +342,6 @@ a.ws-btn.ghost:hover,
   color: var(--ws-gold);
 }
 .ws-you { display: flex; align-items: center; gap: 10px; font-size: 13px; }
-
-.ws-page { padding: 24px 28px 56px; }
 
 .ws-page-head { display: flex; justify-content: space-between; gap: 16px; align-items: center; flex-wrap: wrap; margin-bottom: 20px; }
 .ws-page-head h1 {
@@ -366,13 +368,17 @@ a.ws-btn.ghost:hover,
   margin-top: 4px;
 }
 
-.ws-grid-2 { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 16px; }
-.ws-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+.ws-grid-2 { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 16px; min-width: 0; }
+.ws-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; min-width: 0; }
+.ws-grid-2 > *,
+.ws-grid-3 > * { min-width: 0; max-width: 100%; }
 
 .ws-panel {
   border: 1px solid var(--ws-line);
   background: var(--ws-deep);
   padding: 18px;
+  min-width: 0;
+  max-width: 100%;
 }
 .ws-panel.paper {
   background: var(--ws-cream);
@@ -551,16 +557,23 @@ a.ws-btn.ghost:hover,
 
 .ws-letter-wrap {
   width: 100%;
+  max-width: 100%;
   overflow: hidden;
+  position: relative;
+  container-type: inline-size;
   border: 1px solid rgba(13, 43, 30, 0.12);
   background: #fff;
+  min-height: 200px;
 }
 .ws-letter-frame {
   width: 794px;
-  height: 1123px;
+  height: var(--letter-h, 1123px);
   border: 0;
   background: #fff;
   display: block;
+  position: absolute;
+  left: 0;
+  top: 0;
   transform-origin: top left;
   transform: scale(var(--letter-scale, 1));
 }
@@ -685,29 +698,57 @@ a.ws-btn.ghost:hover,
   color: #d4b56e;
 }
 
-.ws-split { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.ws-split { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; min-width: 0; }
+.ws-split > * { min-width: 0; }
 .ws-line-row {
   display: grid;
-  grid-template-columns: 1.6fr 70px 100px 28px;
+  grid-template-columns: minmax(0, 1.6fr) 72px 104px 40px;
   gap: 8px;
   margin-top: 8px;
   align-items: end;
+  min-width: 0;
 }
+.ws-line-row > * { min-width: 0; }
 .ws-day-row {
   display: grid;
-  grid-template-columns: 1fr 1fr 28px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 40px;
   gap: 8px;
   margin-top: 8px;
+  min-width: 0;
 }
 .ws-table-wrap {
   width: 100%;
+  max-width: 100%;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
-.ws-table { min-width: 640px; }
 .ws-scrim { display: none; }
 .ws-clock { font-size: 14px; }
 .ws-you-name { min-width: 0; }
+
+.ws-rate-btn {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+  gap: 8px;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid rgba(179, 149, 92, 0.18);
+  color: inherit;
+  padding: 8px 0;
+  cursor: pointer;
+  text-align: left;
+}
+.ws-rate-btn span:first-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.ws-rate-btn span:last-child {
+  flex-shrink: 0;
+  color: #b3955c;
+  white-space: nowrap;
+}
 
 html.ws-nav-lock,
 html.ws-nav-lock body {
@@ -715,7 +756,9 @@ html.ws-nav-lock body {
 }
 
 @media (max-width: 1100px) {
-  .ws-stats, .ws-grid-2, .ws-grid-3 { grid-template-columns: 1fr 1fr; }
+  .ws-stats { grid-template-columns: 1fr 1fr; }
+  .ws-grid-3 { grid-template-columns: 1fr 1fr; }
+  .ws-grid-2 { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 860px) {
@@ -753,11 +796,16 @@ html.ws-nav-lock body {
   .ws-stats { grid-template-columns: 1fr 1fr; }
   .ws-grid-2, .ws-grid-3, .ws-split { grid-template-columns: 1fr; }
   .ws-kanban {
-    grid-template-columns: repeat(5, minmax(240px, 80vw));
-    scroll-snap-type: x mandatory;
+    display: flex;
+    flex-direction: column;
+    overflow-x: visible;
   }
-  .ws-col { scroll-snap-align: start; }
-  .ws-line-row, .ws-day-row { grid-template-columns: 1fr; }
+  .ws-col { min-width: 0; width: 100%; }
+  .ws-line-row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 44px;
+  }
+  .ws-line-row > .ws-field:first-child { grid-column: 1 / -1; }
+  .ws-day-row { grid-template-columns: 1fr; }
   .ws-chip { display: none; }
   .ws-you-name {
     max-width: 34vw;
@@ -767,11 +815,46 @@ html.ws-nav-lock body {
   }
   .ws-gate-card { padding: 28px 20px 24px; }
   .ws-modal { padding: 12px; align-items: end; }
-  .ws-modal-card { padding: 20px 16px; max-height: min(92dvh, 900px); }
+  .ws-modal-card { padding: 20px 16px; max-height: min(92dvh, 900px); width: 100%; }
   .ws-toasts { left: 12px; right: 12px; bottom: 12px; }
   .ws-toast { max-width: none; }
   .ws-page-head { align-items: stretch; }
   .ws-page-head .ws-btn { width: 100%; }
+  .ws-actions .ws-btn {
+    flex: 1 1 calc(50% - 8px);
+    min-width: 0;
+    letter-spacing: 0.1em;
+  }
+  .ws-panel { padding: 14px; }
+  .ws-panel.paper h2 { overflow-wrap: anywhere; }
+  .ws-doc-table thead { display: none; }
+  .ws-doc-table,
+  .ws-doc-table tbody,
+  .ws-doc-table tr,
+  .ws-doc-table td {
+    display: block;
+    width: 100%;
+    min-width: 0;
+  }
+  .ws-doc-table tr {
+    border: 1px solid var(--ws-line);
+    background: var(--ws-deep);
+    padding: 14px;
+    margin-bottom: 12px;
+  }
+  .ws-doc-table td {
+    border: 0;
+    padding: 6px 0;
+  }
+  .ws-doc-table td[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ws-gold);
+    margin-bottom: 3px;
+  }
 }
 
 @media (max-width: 520px) {

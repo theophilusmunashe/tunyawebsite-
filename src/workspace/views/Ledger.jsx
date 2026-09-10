@@ -45,8 +45,9 @@ function Letter({ doc, settings }) {
     if (!frame || !wrap) return;
     const sheet = frame.contentDocument?.querySelector(".sheet");
     const height = sheet?.scrollHeight || 1123;
-    const scale = wrap.clientWidth / 794;
+    const scale = Math.min(1, wrap.clientWidth / 794);
     frame.style.height = `${height}px`;
+    wrap.style.setProperty("--letter-h", `${height}px`);
     wrap.style.setProperty("--letter-scale", String(scale));
     wrap.style.height = `${Math.ceil(height * scale)}px`;
   };
@@ -233,7 +234,7 @@ export default function Ledger() {
 
       {!doc && list.length > 0 && (
         <div className="ws-table-wrap">
-        <table className="ws-table">
+        <table className="ws-table ws-doc-table">
           <thead>
             <tr><th>Ref</th><th>Guest</th><th>Package</th><th>Total</th><th>Status</th><th></th></tr>
           </thead>
@@ -242,11 +243,11 @@ export default function Ledger() {
               const t = totalsOf(row, settings);
               return (
                 <tr key={row.id}>
-                  <td>{row.ref}</td>
-                  <td>{row.guestName}<div style={{ color: "#e8dcc4", fontWeight: 400 }}>{row.guestEmail}</div></td>
-                  <td>{row.journey || row.dates}</td>
-                  <td><Money value={t.total} currency={settings.currency} /></td>
-                  <td>{row.status}</td>
+                  <td data-label="Ref">{row.ref}</td>
+                  <td data-label="Guest">{row.guestName}<div style={{ color: "#e8dcc4", fontWeight: 400 }}>{row.guestEmail}</div></td>
+                  <td data-label="Package">{row.journey || row.dates}</td>
+                  <td data-label="Total"><Money value={t.total} currency={settings.currency} /></td>
+                  <td data-label="Status">{row.status}</td>
                   <td>
                     <div className="ws-actions" style={{ marginTop: 0 }}>
                       <Button kind="ghost" className="slim" onClick={() => setDoc({ ...row, _kind: kind })}>Open</Button>
@@ -346,11 +347,11 @@ export default function Ledger() {
                     <button
                       key={item.code}
                       type="button"
+                      className="ws-rate-btn"
                       onClick={() => addRate(item)}
-                      style={{ display: "flex", justifyContent: "space-between", width: "100%", gap: 8, background: "none", border: 0, borderBottom: "1px solid rgba(179,149,92,0.18)", color: "inherit", padding: "8px 0", cursor: "pointer", textAlign: "left" }}
                     >
                       <span>{item.name}</span>
-                      <span style={{ color: "#b3955c", whiteSpace: "nowrap" }}>{item.unit}</span>
+                      <span>{item.unit}</span>
                     </button>
                   ))}
                 </div>
