@@ -18,6 +18,7 @@
   display: flex;
   isolation: isolate;
   color-scheme: dark;
+  overflow-x: hidden;
 }
 
 .ws * { box-sizing: border-box; }
@@ -359,8 +360,8 @@ a.ws-btn.ghost:hover,
 }
 .ws-stat b {
   display: block;
-  font-family: "Cormorant Garamond", Georgia, serif;
-  font-size: 36px;
+  font-family: Poppins, sans-serif;
+  font-size: 32px;
   font-weight: 500;
   margin-top: 4px;
 }
@@ -669,6 +670,35 @@ a.ws-btn.ghost:hover,
   color: #d4b56e;
 }
 
+.ws-split { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.ws-line-row {
+  display: grid;
+  grid-template-columns: 1.6fr 70px 100px 28px;
+  gap: 8px;
+  margin-top: 8px;
+  align-items: end;
+}
+.ws-day-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 28px;
+  gap: 8px;
+  margin-top: 8px;
+}
+.ws-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.ws-table { min-width: 640px; }
+.ws-scrim { display: none; }
+.ws-clock { font-size: 14px; }
+.ws-you-name { min-width: 0; }
+
+html.ws-nav-lock,
+html.ws-nav-lock body {
+  overflow: hidden;
+}
+
 @media (max-width: 1100px) {
   .ws-stats, .ws-grid-2, .ws-grid-3 { grid-template-columns: 1fr 1fr; }
 }
@@ -679,10 +709,62 @@ a.ws-btn.ghost:hover,
     z-index: 30;
     transform: translateX(-105%);
     transition: transform 0.2s ease;
+    width: min(280px, 86vw);
+    height: 100dvh;
+    box-shadow: 16px 0 40px rgba(0, 0, 0, 0.35);
   }
   .ws-side.is-open { transform: none; }
+  .ws-scrim {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 25;
+    border: 0;
+    background: rgba(4, 16, 10, 0.62);
+    cursor: pointer;
+  }
   .ws-burger { display: flex; }
-  .ws-page, .ws-top { padding-left: 16px; padding-right: 16px; }
-  .ws-stats, .ws-grid-2, .ws-grid-3 { grid-template-columns: 1fr; }
-  .ws-kanban { grid-template-columns: repeat(5, 220px); }
+  .ws-page {
+    padding: 16px 14px 40px;
+    padding-left: max(14px, env(safe-area-inset-left));
+    padding-right: max(14px, env(safe-area-inset-right));
+    padding-bottom: max(40px, env(safe-area-inset-bottom));
+  }
+  .ws-top {
+    padding: 12px 14px;
+    padding-left: max(14px, env(safe-area-inset-left));
+    padding-right: max(14px, env(safe-area-inset-right));
+  }
+  .ws-stats { grid-template-columns: 1fr 1fr; }
+  .ws-grid-2, .ws-grid-3, .ws-split { grid-template-columns: 1fr; }
+  .ws-kanban {
+    grid-template-columns: repeat(5, minmax(240px, 80vw));
+    scroll-snap-type: x mandatory;
+  }
+  .ws-col { scroll-snap-align: start; }
+  .ws-line-row, .ws-day-row { grid-template-columns: 1fr; }
+  .ws-chip { display: none; }
+  .ws-you-name {
+    max-width: 34vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .ws-gate-card { padding: 28px 20px 24px; }
+  .ws-modal { padding: 12px; align-items: end; }
+  .ws-modal-card { padding: 20px 16px; max-height: min(92dvh, 900px); }
+  .ws-toasts { left: 12px; right: 12px; bottom: 12px; }
+  .ws-toast { max-width: none; }
+  .ws-page-head { align-items: stretch; }
+  .ws-page-head .ws-btn { width: 100%; }
+}
+
+@media (max-width: 520px) {
+  .ws-you-name { display: none; }
+  .ws-clock { font-size: 12px; }
+  .ws-page-head h1 { font-size: 18px; }
+  .ws-stat b { font-size: 28px; }
+  .ws-files { grid-template-columns: 1fr; }
+  .ws-brand img { width: 120px; }
+  .ws-top-meta { gap: 10px; }
 }

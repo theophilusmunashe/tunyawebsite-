@@ -1,30 +1,20 @@
 import { useEffect, useState } from "react";
-import { Navigate, NavLink, Route, Routes, useNavigate } from "react-router-dom";
+import { Navigate, NavLink, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { catParts, sprayForMonth } from "./lib/time.js";
 import { useWorkspace } from "./store.jsx";
 import Pulse from "./views/Pulse.jsx";
 import Vault from "./views/Vault.jsx";
-import Dispatch from "./views/Dispatch.jsx";
 import Ledger from "./views/Ledger.jsx";
 import Journeys from "./views/Journeys.jsx";
-import Manifest from "./views/Manifest.jsx";
-import BorderDesk from "./views/BorderDesk.jsx";
-import Spray from "./views/Spray.jsx";
-import Brief from "./views/Brief.jsx";
 import Crew from "./views/Crew.jsx";
 import Settings from "./views/Settings.jsx";
 
 const NAV = [
   { section: "Today", items: [
-    { to: "/admin", label: "Dashboard", end: true },
-    { to: "/admin/dispatch", label: "Tasks" },
-    { to: "/admin/manifest", label: "Schedule" },
-    { to: "/admin/brief", label: "Brief" }
+    { to: "/admin", label: "Dashboard", end: true }
   ]},
   { section: "Guests", items: [
-    { to: "/admin/journeys", label: "Bookings" },
-    { to: "/admin/border", label: "Visas" },
-    { to: "/admin/spray", label: "Season" }
+    { to: "/admin/journeys", label: "Bookings" }
   ]},
   { section: "Office", items: [
     { to: "/admin/vault", label: "Files" },
@@ -39,12 +29,28 @@ export default function Shell() {
   const [open, setOpen] = useState(false);
   const [clock, setClock] = useState(catParts());
   const navigate = useNavigate();
+  const location = useLocation();
   const spray = sprayForMonth();
 
   useEffect(() => {
     const t = setInterval(() => setClock(catParts()), 30000);
     return () => clearInterval(t);
   }, []);
+
+  useEffect(() => {
+    setOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === "Escape") setOpen(false); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("ws-nav-lock", open);
+    return () => document.documentElement.classList.remove("ws-nav-lock");
+  }, [open]);
 
   useEffect(() => {
     const prev = document.title;
@@ -60,7 +66,8 @@ export default function Shell() {
   }, []);
 
   return (
-    <div className="ws">
+    <div className={`ws${open ? " is-nav-open" : ""}`}>
+      {open && <button type="button" className="ws-scrim" aria-label="Close menu" onClick={() => setOpen(false)} />}
       <aside className={`ws-side${open ? " is-open" : ""}`}>
         <div className="ws-brand">
           <img src="/assets/logo-cream.png" alt="Tunyafrika" />
@@ -86,18 +93,18 @@ export default function Shell() {
       <div className="ws-main">
         <header className="ws-top">
           <div className="ws-top-meta">
-            <button type="button" className="ws-burger" aria-label="Open menu" onClick={() => setOpen((v) => !v)}>
+            <button type="button" className="ws-burger" aria-label="Open menu" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
               <span /><span /><span />
             </button>
             <div>
               <div className="ws-kicker">CAT</div>
-              <div style={{ fontSize: 14 }}>{clock.weekday} {clock.day} {clock.month} · {clock.hour}:{clock.minute}</div>
+              <div className="ws-clock">{clock.weekday} {clock.day} {clock.month} · {clock.hour}:{clock.minute}</div>
             </div>
             <div className="ws-chip">{spray.label}</div>
           </div>
           <div className="ws-you">
             <span className="ws-mono">{you?.initials || "—"}</span>
-            <span>
+            <span className="ws-you-name">
               <div className="ws-kicker">Admin</div>
               {you?.name}
             </span>
@@ -107,13 +114,8 @@ export default function Shell() {
           <Routes>
             <Route index element={<Pulse />} />
             <Route path="vault" element={<Vault />} />
-            <Route path="dispatch" element={<Dispatch />} />
             <Route path="ledger" element={<Ledger />} />
             <Route path="journeys" element={<Journeys />} />
-            <Route path="manifest" element={<Manifest />} />
-            <Route path="border" element={<BorderDesk />} />
-            <Route path="spray" element={<Spray />} />
-            <Route path="brief" element={<Brief />} />
             <Route path="crew" element={<Crew />} />
             <Route path="settings" element={<Settings />} />
             <Route path="*" element={<Navigate to="/admin" replace />} />

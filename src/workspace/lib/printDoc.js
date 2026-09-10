@@ -3,14 +3,16 @@ import { jsPDF } from "jspdf";
 import { esc } from "./ids.js";
 import { prettyDate } from "./time.js";
 
-const FONT_HREF = "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500&family=Poppins:wght@300;400;600&display=swap";
+const FONT_HREF = "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500&family=Poppins:wght@400;600&display=swap";
+
+const OFFICE_EMAIL = "operations@tunyafrika.com";
 
 const SHEET_CSS = `
 .sheet {
   width: 794px;
   background: #fff;
   font-family: Poppins, "Segoe UI", sans-serif;
-  color: #0d2b1e;
+  color: #000;
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
 }
@@ -18,23 +20,23 @@ const SHEET_CSS = `
 .sheet .mast { background: #04301f; color: #faf3e8; padding: 28px 32px; display: flex; justify-content: space-between; gap: 24px; align-items: center; }
 .sheet .mast img { height: 52px; }
 .sheet .kicker { font-size: 10px; letter-spacing: 0.42em; text-transform: uppercase; color: #b3955c; }
-.sheet h1 { font-family: "Cormorant Garamond", Georgia, serif; font-weight: 500; font-size: 42px; margin: 6px 0 0; }
-.sheet .meta { text-align: right; font-size: 13px; line-height: 1.7; }
-.sheet .body { padding: 28px 32px 12px; }
+.sheet h1 { font-family: "Cormorant Garamond", Georgia, serif; font-weight: 500; font-size: 42px; margin: 6px 0 0; color: #faf3e8; }
+.sheet .meta { text-align: right; font-size: 13px; line-height: 1.7; color: #faf3e8; }
+.sheet .body { padding: 28px 32px 12px; color: #000; }
 .sheet .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-bottom: 28px; }
-.sheet .label { font-size: 10px; letter-spacing: 0.28em; text-transform: uppercase; color: #b3955c; }
-.sheet .block { margin-top: 6px; font-size: 14px; line-height: 1.65; font-weight: 300; }
+.sheet .label { font-size: 10px; letter-spacing: 0.28em; text-transform: uppercase; color: #000; font-weight: 600; }
+.sheet .block { margin-top: 6px; font-size: 14px; line-height: 1.65; font-weight: 400; color: #000; }
 .sheet table { width: 100%; border-collapse: collapse; }
-.sheet th { text-align: left; font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: #b3955c; border-bottom: 1px solid #b3955c; padding: 8px 0; }
-.sheet td { padding: 12px 0; border-bottom: 1px solid rgba(13,43,30,0.12); font-size: 14px; vertical-align: top; }
+.sheet th { text-align: left; font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: #000; font-weight: 600; border-bottom: 1px solid #000; padding: 8px 0; }
+.sheet td { padding: 12px 0; border-bottom: 1px solid #000; font-size: 14px; vertical-align: top; color: #000; font-weight: 400; }
 .sheet .num { text-align: right; white-space: nowrap; }
-.sheet .muted { color: rgba(13,43,30,0.5); font-size: 11px; margin-top: 3px; }
-.sheet .totals { width: 280px; margin: 18px 0 0 auto; }
-.sheet .totals div { display: flex; justify-content: space-between; padding: 6px 0; font-size: 14px; }
-.sheet .grand { border-top: 1px solid #b3955c; margin-top: 8px; padding-top: 10px; font-weight: 600; }
-.sheet .terms { margin-top: 36px; font-size: 12px; font-weight: 300; line-height: 1.7; color: rgba(13,43,30,0.75); }
-.sheet .foot { margin-top: 28px; padding: 18px 32px 28px; border-top: 1px solid rgba(179,149,92,0.5); font-size: 12px; color: rgba(13,43,30,0.7); display: flex; justify-content: space-between; gap: 16px; }
-.sheet .gold { color: #b3955c; }
+.sheet .muted { color: #000; font-size: 12px; margin-top: 3px; font-weight: 400; }
+.sheet .totals { width: 280px; margin: 18px 0 0 auto; color: #000; }
+.sheet .totals div { display: flex; justify-content: space-between; padding: 6px 0; font-size: 14px; color: #000; font-weight: 400; }
+.sheet .grand { border-top: 1px solid #000; margin-top: 8px; padding-top: 10px; font-weight: 600; color: #000; }
+.sheet .terms { margin-top: 36px; font-size: 13px; font-weight: 400; line-height: 1.7; color: #000; }
+.sheet .foot { margin-top: 28px; padding: 18px 32px 28px; border-top: 1px solid #000; font-size: 13px; color: #000; font-weight: 400; display: flex; justify-content: space-between; gap: 16px; }
+.sheet .gold { color: #000; font-weight: 400; }
 `;
 
 function logoSrc(logo) {
@@ -106,7 +108,7 @@ export function documentHtml({ kind, doc, settings, logo }) {
             ${esc(settings.company || "Tunyafrika Xperiences")}<br />
             ${esc(settings.address1 || "")}<br />
             ${esc(settings.address2 || "")}<br />
-            ${esc(settings.email || "")}<br />
+            ${esc(settings.email || OFFICE_EMAIL)}<br />
             ${esc(settings.phone || "")}
           </div>
         </div>
@@ -142,7 +144,7 @@ export function documentHtml({ kind, doc, settings, logo }) {
       <div class="terms"><span class="label">Terms</span><div class="block">${esc(terms)}</div></div>
     </div>
     <div class="foot">
-      <div>${esc(settings.web || "www.tunyafrika.com")} · ${esc(settings.email || "enquiries@tunyafrika.com")}</div>
+      <div>${esc(settings.web || "www.tunyafrika.com")} · ${esc(settings.email || OFFICE_EMAIL)}</div>
       <div class="gold">Where the earth roars — and we do not stop there.</div>
     </div>
   </div>
@@ -187,7 +189,6 @@ async function waitForAssets(doc) {
   )));
   if (doc.fonts?.load) {
     await Promise.all([
-      doc.fonts.load("300 14px Poppins"),
       doc.fonts.load("400 14px Poppins"),
       doc.fonts.load("600 14px Poppins"),
       doc.fonts.load('500 42px "Cormorant Garamond"')

@@ -7,7 +7,7 @@ export const DEFAULT_SETTINGS = {
   tagline: "Xpectional Xperiences",
   address1: "619 Ngugwuma Road",
   address2: "Victoria Falls, Zimbabwe",
-  email: "enquiries@tunyafrika.com",
+  email: "operations@tunyafrika.com",
   phone: "+263 78 266 9251",
   web: "www.tunyafrika.com",
   bankName: "",
@@ -76,9 +76,17 @@ export async function migrateWorkspace() {
   }
 
   const settings = (await kvGet("settings")) || {};
+  const nextSettings = { ...settings };
+  let settingsChanged = false;
   if (typeof settings.chalkboard === "string" && /spray this week|rainforest is at full voice/i.test(settings.chalkboard)) {
-    await kvSet("settings", { ...settings, chalkboard: "" });
+    nextSettings.chalkboard = "";
+    settingsChanged = true;
   }
+  if (!settings.email || /enquiries@tunyafrika\.com/i.test(settings.email)) {
+    nextSettings.email = "operations@tunyafrika.com";
+    settingsChanged = true;
+  }
+  if (settingsChanged) await kvSet("settings", nextSettings);
 
   const files = await fileListMeta();
   for (const file of files) {

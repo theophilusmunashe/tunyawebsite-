@@ -197,6 +197,7 @@ export default function Ledger() {
       {!doc && list.length === 0 && <Empty>No {tab} yet.</Empty>}
 
       {!doc && list.length > 0 && (
+        <div className="ws-table-wrap">
         <table className="ws-table">
           <thead>
             <tr><th>Ref</th><th>Guest</th><th>Package</th><th>Total</th><th>Status</th><th></th></tr>
@@ -225,6 +226,7 @@ export default function Ledger() {
             })}
           </tbody>
         </table>
+        </div>
       )}
 
       {doc && (
@@ -238,7 +240,7 @@ export default function Ledger() {
             <Field label="Email">
               <input value={doc.guestEmail} onChange={(e) => setDoc({ ...doc, guestEmail: e.target.value })} />
             </Field>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            <div className="ws-split">
             <Field label="Guests">
                 <input value={doc.pax} onChange={(e) => setDoc({ ...doc, pax: e.target.value })} />
               </Field>
@@ -268,7 +270,7 @@ export default function Ledger() {
             </Field>
             <Kicker>Line items</Kicker>
             {(doc.lines || []).map((line) => (
-              <div key={line.id} style={{ display: "grid", gridTemplateColumns: "1.6fr 70px 100px 28px", gap: 8, marginTop: 8, alignItems: "end" }}>
+              <div key={line.id} className="ws-line-row">
                 <Field label="Description">
                   <input value={line.description} onChange={(e) => patchLine(line.id, { description: e.target.value })} />
                 </Field>

@@ -63,7 +63,7 @@ export default function Journeys() {
 
       {open && (
         <Modal title={open.guestName || "New booking"} onClose={() => setOpen(null)}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+          <div className="ws-split">
             <Field label="Guest">
               <input value={open.guestName} onChange={(e) => setOpen({ ...open, guestName: e.target.value })} />
             </Field>
@@ -104,7 +104,7 @@ export default function Journeys() {
             <textarea value={open.notes} onChange={(e) => setOpen({ ...open, notes: e.target.value })} />
           </Field>
           {(open.days || []).map((day, i) => (
-            <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 28px", gap: 8, marginTop: 8 }}>
+            <div key={i} className="ws-day-row">
               <Field label={`Day ${i + 1}`}>
                 <input value={day.title} onChange={(e) => {
                   const days = [...open.days];
