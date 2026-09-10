@@ -18,6 +18,7 @@ export default function Settings() {
           <Field label="Address"><input value={settings.address1 || ""} onChange={(e) => set({ address1: e.target.value })} /></Field>
           <Field label="Town"><input value={settings.address2 || ""} onChange={(e) => set({ address2: e.target.value })} /></Field>
           <Field label="Email"><input value={settings.email || ""} onChange={(e) => set({ email: e.target.value })} /></Field>
+          <p className="ws-lede" style={{ marginTop: 8 }}>Quotations and invoices are sent from operations@tunyafrika.com.</p>
           <Field label="Phone"><input value={settings.phone || ""} onChange={(e) => set({ phone: e.target.value })} /></Field>
           <Field label="Web"><input value={settings.web || ""} onChange={(e) => set({ web: e.target.value })} /></Field>
         </div>

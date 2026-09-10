@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { RATE_CARD } from "../data/catalog.js";
 import { uid, nextRef } from "../lib/ids.js";
-import { notifyPerson } from "../lib/notify.js";
-import { documentHtml, downloadPdf, openPrint, totalsOf } from "../lib/printDoc.js";
+import { guestMailDraft, OFFICE_FROM, sendWorkspaceMail } from "../lib/notify.js";
+import { documentHtml, downloadPdf, openPrint, pdfForMail, totalsOf } from "../lib/printDoc.js";
 import { todayISO } from "../lib/time.js";
-import { useWorkspace } from "../store.jsx";
-import { Button, Empty, Field, Kicker, Money, PageHead } from "../ui.jsx";
+import { useWorkspace, workspaceKey } from "../store.jsx";
+import { Button, Empty, Field, Kicker, Modal, Money, PageHead } from "../ui.jsx";
 
 function blankDoc(kind, settings) {
   const year = new Date().getFullYear();
@@ -71,10 +71,13 @@ function Letter({ doc, settings }) {
 }
 
 export default function Ledger() {
-  const { quotes, invoices, journeys, settings, upsert, updateSettings, remove, toast } = useWorkspace();
+  const { quotes, invoices, journeys, settings, upsert, updateSettings, remove, toast, you } = useWorkspace();
   const [tab, setTab] = useState("quotes");
   const [doc, setDoc] = useState(null);
   const [busyPdf, setBusyPdf] = useState(false);
+  const [mail, setMail] = useState(null);
+  const [busyMail, setBusyMail] = useState(false);
+  const [mailError, setMailError] = useState("");
 
   const list = tab === "quotes" ? quotes : invoices;
   const kind = tab === "quotes" ? "quote" : "invoice";
@@ -151,31 +154,63 @@ export default function Ledger() {
     setTab("invoices");
   };
 
-  const mailGuest = async (row) => {
+  const openMail = (row, as) => {
     if (!row.guestEmail) {
       toast("Add a guest email first.");
       return;
     }
-    const t = totalsOf(row, settings);
-    const isQuote = row.ref?.startsWith("TQ");
-    const subject = `${isQuote ? "Quotation" : "Invoice"} ${row.ref} — Tunyafrika Xperiences`;
-    const body = [
-      `Dear ${row.guestName || "guest"},`,
-      ``,
-      `Please find ${isQuote ? "your quotation" : "your invoice"} ${row.ref}.`,
-      ``,
-      row.journey || "",
-      row.dates || "",
-      `Total: ${settings.currency || "USD"} ${t.total.toFixed(2)}`,
-      isQuote ? `A ${t.depositPct}% deposit confirms the booking.` : `Please use ${row.ref} as payment reference.`,
-      ``,
-      settings.email,
-      settings.phone,
-      `Tunyafrika Xperiences`
-    ].join("\n");
-    const result = await notifyPerson({ to: row.guestEmail, toName: row.guestName, subject, body });
-    if (result.emailed) toast(`Mailed ${row.ref} to ${row.guestEmail}.`);
-    else window.location.href = result.mailto;
+    const draft = guestMailDraft({ kind: as, doc: row, settings, you });
+    setMailError("");
+    setMail({ row, kind: as, ...draft });
+  };
+
+  const sendMail = async () => {
+    if (!mail) return;
+    const to = (mail.to || "").trim();
+    if (!to) {
+      setMailError("Add a guest email first.");
+      return;
+    }
+    if (!(mail.subject || "").trim() || !(mail.message || "").trim()) {
+      setMailError("Add a subject and a message.");
+      return;
+    }
+    setBusyMail(true);
+    setMailError("");
+    try {
+      let pdfBase64 = "";
+      let pdfName = "";
+      if (mail.attach) {
+        const pdf = await pdfForMail({
+          kind: mail.kind,
+          doc: mail.row,
+          settings,
+          filename: `${mail.row.ref || mail.kind}.pdf`
+        });
+        pdfBase64 = pdf.base64;
+        pdfName = pdf.filename;
+      }
+      await sendWorkspaceMail({
+        to,
+        toName: mail.row.guestName,
+        subject: mail.subject.trim(),
+        message: mail.message.trim(),
+        pdfBase64,
+        pdfName,
+        key: workspaceKey()
+      });
+      const collection = mail.kind === "invoice" ? "invoices" : "quotes";
+      if (mail.row.id) {
+        await upsert(collection, { ...mail.row, guestEmail: to, status: "sent" });
+      }
+      if (doc && doc.id === mail.row.id) setDoc({ ...doc, guestEmail: to, status: "sent" });
+      toast(`${mail.row.ref} sent to ${to}.`);
+      setMail(null);
+    } catch (err) {
+      setMailError(err.message || "Could not send the email.");
+    } finally {
+      setBusyMail(false);
+    }
   };
 
   const patchLine = (id, patch) => {
@@ -217,7 +252,7 @@ export default function Ledger() {
                       <Button kind="ghost" className="slim" onClick={() => setDoc({ ...row, _kind: kind })}>Open</Button>
                       <Button kind="ghost" className="slim" disabled={busyPdf} onClick={() => download(row, kind)}>PDF</Button>
                       <Button kind="ghost" className="slim" onClick={() => print(row, kind)}>Print</Button>
-                      <Button kind="ghost" className="slim" onClick={() => mailGuest(row)}>Mail</Button>
+                      <Button kind="ghost" className="slim" disabled={busyPdf || busyMail} onClick={() => openMail(row, kind)}>Mail</Button>
                       {kind === "quote" && row.status !== "invoiced" && <Button className="slim" onClick={() => convert(row)}>To invoice</Button>}
                     </div>
                   </td>
@@ -295,6 +330,7 @@ export default function Ledger() {
             <div className="ws-actions">
               <Button onClick={save}>Save</Button>
               <Button kind="ghost" disabled={busyPdf} onClick={() => download(doc, doc._kind || kind)}>{busyPdf ? "Preparing…" : "Download PDF"}</Button>
+              <Button kind="ghost" disabled={busyPdf || busyMail} onClick={() => openMail(doc, doc._kind || kind)}>Mail</Button>
               <Button kind="ghost" onClick={() => print(doc, doc._kind || kind)}>Print</Button>
               <Button kind="ghost" onClick={() => setDoc(null)}>Close</Button>
               {doc.id && <Button kind="warn" onClick={() => { remove(kind === "quote" ? "quotes" : "invoices", doc.id); setDoc(null); }}>Remove</Button>}
@@ -323,6 +359,38 @@ export default function Ledger() {
             <Letter doc={doc} settings={settings} />
           </div>
         </div>
+      )}
+
+      {mail && (
+        <Modal title={`Send ${mail.label}`} onClose={() => { if (!busyMail) setMail(null); }}>
+          <p className="ws-lede" style={{ marginTop: 0 }}>From {OFFICE_FROM}. The guest stays in this window.</p>
+          <Field label="To">
+            <input type="email" value={mail.to} onChange={(e) => setMail({ ...mail, to: e.target.value })} />
+          </Field>
+          <Field label="Subject">
+            <input value={mail.subject} onChange={(e) => setMail({ ...mail, subject: e.target.value })} />
+          </Field>
+          <Field label="Message">
+            <textarea
+              className="ws-mail-body"
+              value={mail.message}
+              onChange={(e) => setMail({ ...mail, message: e.target.value })}
+            />
+          </Field>
+          <label className="ws-mail-attach">
+            <input
+              type="checkbox"
+              checked={mail.attach}
+              onChange={(e) => setMail({ ...mail, attach: e.target.checked })}
+            />
+            Attach {mail.row.ref || mail.label} PDF
+          </label>
+          {mailError && <p className="ws-mail-error">{mailError}</p>}
+          <div className="ws-actions">
+            <Button disabled={busyMail} onClick={sendMail}>{busyMail ? "Sending…" : "Send"}</Button>
+            <Button kind="ghost" disabled={busyMail} onClick={() => setMail(null)}>Cancel</Button>
+          </div>
+        </Modal>
       )}
     </div>
   );

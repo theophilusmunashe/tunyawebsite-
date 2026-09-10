@@ -228,7 +228,7 @@ function loadIframe(html) {
   return iframe;
 }
 
-export async function downloadPdf({ kind, doc, settings, filename }) {
+async function buildPdf({ kind, doc, settings }) {
   const logo = await logoDataUrl().catch(() => `${window.location.origin}/assets/logo-cream.png`);
   const html = documentHtml({ kind, doc, settings, logo });
   const iframe = loadIframe(html);
@@ -273,11 +273,25 @@ export async function downloadPdf({ kind, doc, settings, filename }) {
       pdf.addImage(imgData, "PNG", 0, y, imgW, imgH, undefined, "FAST");
       left -= pageH;
     }
-    pdf.save(filename || `${doc.ref || "document"}.pdf`);
-    return true;
+    return pdf;
   } finally {
     iframe.remove();
   }
+}
+
+export async function downloadPdf({ kind, doc, settings, filename }) {
+  const pdf = await buildPdf({ kind, doc, settings });
+  pdf.save(filename || `${doc.ref || "document"}.pdf`);
+  return true;
+}
+
+export async function pdfForMail({ kind, doc, settings, filename }) {
+  const pdf = await buildPdf({ kind, doc, settings });
+  const name = filename || `${doc.ref || "document"}.pdf`;
+  const dataUri = pdf.output("datauristring");
+  const base64 = String(dataUri).split(",")[1] || "";
+  if (!base64) throw new Error("Could not create the PDF.");
+  return { filename: name, base64 };
 }
 
 export function totalsOf(doc, settings) {

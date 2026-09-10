@@ -1,3 +1,7 @@
+import { totalsOf } from "./printDoc.js";
+
+export const OFFICE_FROM = "operations@tunyafrika.com";
+
 function waDigits(phone = "") {
   return String(phone).replace(/[^\d]/g, "");
 }
@@ -12,25 +16,61 @@ export function whatsappHref(phone, text) {
   return `https://wa.me/${digits}?text=${encodeURIComponent(text)}`;
 }
 
-export function taskMessage(task, assignee, actor) {
-  const due = task.due ? `Due ${task.due}` : "No due date";
-  return [
-    `Tunyafrika task`,
+export function guestMailDraft({ kind, doc, settings, you }) {
+  const currency = settings.currency || "USD";
+  const t = totalsOf(doc, settings);
+  const isQuote = kind === "quote";
+  const label = isQuote ? "quotation" : "invoice";
+  const from = settings.email || OFFICE_FROM;
+  const sender = you?.name || "Tunyafrika Xperiences";
+  const subject = `${isQuote ? "Quotation" : "Invoice"} ${doc.ref || ""} — Tunyafrika Xperiences`.trim();
+  const message = [
+    `Dear ${doc.guestName || "guest"},`,
     ``,
-    `${actor?.name || "A colleague"} assigned you a task.`,
+    `Please find ${isQuote ? "your quotation" : "your invoice"} ${doc.ref || ""} attached.`,
     ``,
-    `Task: ${task.title}`,
-    `Priority: ${task.priority === "thunder" ? "High" : task.priority === "mist" ? "Low" : "Medium"}`,
-    due,
-    task.notes ? `Notes: ${task.notes}` : null,
+    doc.journey || null,
+    doc.dates || null,
+    `Total: ${currency} ${t.total.toFixed(2)}`,
+    isQuote
+      ? `A ${t.depositPct}% deposit confirms the booking.`
+      : `Please use ${doc.ref} as the payment reference.`,
     ``,
-    `https://www.tunyafrika.com/admin`,
-    ``,
-    `Tunyafrika Xperiences`
-  ].filter((line) => line !== null).join("\n");
+    `Warm regards,`,
+    sender,
+    `Tunyafrika Xperiences`,
+    from,
+    settings.phone || null
+  ].filter((line) => line !== null).join("\n").trim();
+
+  return {
+    to: doc.guestEmail || "",
+    subject,
+    message,
+    attach: true,
+    label
+  };
 }
 
-async function sendEmailJs({ to, toName, subject, body }) {
+async function postMail(url, payload) {
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    body: JSON.stringify(payload)
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || data.ok !== true) {
+    const missing = data.ok !== true && !data.error;
+    const err = new Error(data.error || (missing
+      ? "Email sending is available on the live site. Deploy this update, then send from tunyafrika.com/admin."
+      : `Could not send the email (${res.status}).`));
+    err.status = missing ? 404 : res.status;
+    throw err;
+  }
+  return data;
+}
+
+async function sendEmailJs({ to, toName, subject, message }) {
   const service = import.meta.env.VITE_EMAILJS_SERVICE_ID;
   const template = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
   const key = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
@@ -45,46 +85,37 @@ async function sendEmailJs({ to, toName, subject, body }) {
       template_params: {
         to_email: to,
         to_name: toName || to,
+        from_email: OFFICE_FROM,
         subject,
-        message: body
+        message
       }
     })
   });
   return res.ok;
 }
 
-async function sendFormSubmit({ to, subject, body }) {
-  const res = await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(to)}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Accept: "application/json" },
-    body: JSON.stringify({
-      _subject: subject,
-      _template: "box",
-      name: "Tunyafrika Workspace",
-      message: body
-    })
-  });
-  return res.ok;
-}
-
-export async function notifyPerson({ to, toName, phone, subject, body }) {
-  const result = {
-    emailed: false,
-    mailto: to ? mailtoHref(to, subject, body) : "",
-    whatsapp: phone ? whatsappHref(phone, body) : ""
+export async function sendWorkspaceMail({ to, toName, subject, message, pdfBase64, pdfName, key }) {
+  const payload = {
+    key: key || import.meta.env.VITE_MAIL_KEY || "",
+    to,
+    toName: toName || "",
+    subject,
+    message,
+    from: OFFICE_FROM,
+    pdfName: pdfName || "",
+    pdfBase64: pdfBase64 || ""
   };
-  if (!to) return result;
+
+  const endpoint = import.meta.env.VITE_MAIL_URL || "/api/send-mail.php";
   try {
-    result.emailed = await sendEmailJs({ to, toName, subject, body });
-  } catch {
-    result.emailed = false;
+    await postMail(endpoint, payload);
+    return { emailed: true };
+  } catch (err) {
+    if (err.status && err.status !== 404) throw err;
+    const emailed = await sendEmailJs({ to, toName, subject, message });
+    if (emailed) return { emailed: true, attached: false };
+    throw err.status === 404
+      ? new Error("Email sending is available on the live site. Deploy this update, then send from tunyafrika.com/admin.")
+      : err;
   }
-  if (!result.emailed) {
-    try {
-      result.emailed = await sendFormSubmit({ to, subject, body });
-    } catch {
-      result.emailed = false;
-    }
-  }
-  return result;
 }

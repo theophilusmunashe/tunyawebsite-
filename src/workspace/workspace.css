@@ -650,7 +650,22 @@ a.ws-btn.ghost:hover,
 }
 .ws-modal-card .ws-lede,
 .ws-modal-card p {
-  color: rgba(13, 43, 30, 0.78);
+  color: #000;
+}
+.ws-mail-body { min-height: 220px; }
+.ws-mail-attach {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+  font-size: 14px;
+  color: #000;
+  font-weight: 400;
+}
+.ws-mail-error {
+  color: #9a3412 !important;
+  font-size: 14px;
+  margin: 12px 0 0;
 }
 .ws-modal-card .ws-btn.ghost,
 .ws-panel.paper .ws-btn.ghost,
