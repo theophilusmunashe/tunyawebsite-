@@ -354,7 +354,19 @@ a.ws-btn.ghost:hover,
 }
 .ws-lede { font-weight: 400; color: var(--ws-mute); line-height: 1.5; margin-top: 8px; font-size: 13px; }
 
+.ws-books-note {
+  color: var(--ws-mute);
+  margin: 0 0 18px;
+  max-width: 64ch;
+  line-height: 1.55;
+  font-size: 14px;
+}
+.ws-table-sub:empty { display: none; }
+.ws-money-in { color: #cfe8c4; }
+.ws-money-out { color: #f0c8b4; }
+
 .ws-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 22px; }
+.ws-stats.three { grid-template-columns: repeat(3, 1fr); }
 .ws-stat {
   border: 1px solid var(--ws-line);
   padding: 16px 16px 14px;
@@ -366,6 +378,11 @@ a.ws-btn.ghost:hover,
   font-size: 32px;
   font-weight: 500;
   margin-top: 4px;
+  overflow-wrap: anywhere;
+}
+.ws-stats.three .ws-stat b,
+.ws-stats.money .ws-stat b {
+  font-size: 22px;
 }
 
 .ws-grid-2 { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 16px; min-width: 0; }
@@ -757,6 +774,7 @@ html.ws-nav-lock body {
 
 @media (max-width: 1100px) {
   .ws-stats { grid-template-columns: 1fr 1fr; }
+  .ws-stats.three { grid-template-columns: 1fr 1fr; }
   .ws-grid-3 { grid-template-columns: 1fr 1fr; }
   .ws-grid-2 { grid-template-columns: 1fr; }
 }

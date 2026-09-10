@@ -31,6 +31,20 @@ export const DEFAULT_CREW = [
   { id: "crew_dm", initials: "DM", name: "Dzikamai Ronald Muchemedzi", role: "Admin", email: "dzikamai@tunyafrika.com", phone: "" }
 ];
 
+export const DIRECTORS = [
+  { id: "crew_tm", short: "Theo", name: "Theophilus Munashe Maposa" },
+  { id: "crew_dm", short: "Dzika", name: "Dzikamai Ronald Muchemedzi" },
+  { id: "crew_rv", short: "Rudolph", name: "Rudolph Benjamin Volksgyn" }
+];
+
+export const LOAN_KINDS = [
+  { id: "asset", label: "Asset purchase" },
+  { id: "advance", label: "Loan to company" },
+  { id: "repay", label: "Repayment" }
+];
+
+export const CASH_CATEGORIES = ["Bank", "Sales", "Operating", "Asset", "Director", "Other"];
+
 function daysFromToday(n) {
   const [y, m, d] = todayISO().split("-").map(Number);
   const dt = new Date(Date.UTC(y, m - 1, d + n));
@@ -87,6 +101,9 @@ export async function migrateWorkspace() {
     settingsChanged = true;
   }
   if (settingsChanged) await kvSet("settings", nextSettings);
+
+  if ((await kvGet("cashbook")) == null) await kvSet("cashbook", []);
+  if ((await kvGet("loans")) == null) await kvSet("loans", []);
 
   const files = await fileListMeta();
   for (const file of files) {
@@ -194,6 +211,8 @@ async function writeSeed() {
   ]);
 
   await kvSet("invoices", []);
+  await kvSet("cashbook", []);
+  await kvSet("loans", []);
 
   await kvSet("tasks", [
     {

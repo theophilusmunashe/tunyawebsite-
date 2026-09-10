@@ -98,7 +98,7 @@ export function fileListMeta() {
 }
 
 export async function exportBackup() {
-  const keys = ["seeded", "settings", "crew", "tasks", "quotes", "invoices", "journeys", "movements", "visaCases", "briefs", "notices"];
+  const keys = ["seeded", "settings", "crew", "tasks", "quotes", "invoices", "cashbook", "loans", "journeys", "movements", "visaCases", "briefs", "notices"];
   const kv = {};
   for (const key of keys) kv[key] = await kvGet(key);
   const files = await tx("files", "readonly", (s) => s.getAll());

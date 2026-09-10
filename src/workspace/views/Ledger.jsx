@@ -6,6 +6,7 @@ import { documentHtml, downloadPdf, openPrint, pdfForMail, totalsOf } from "../l
 import { todayISO } from "../lib/time.js";
 import { useWorkspace, workspaceKey } from "../store.jsx";
 import { Button, Empty, Field, Kicker, Modal, Money, PageHead } from "../ui.jsx";
+import Books from "./Books.jsx";
 
 function blankDoc(kind, settings) {
   const year = new Date().getFullYear();
@@ -222,17 +223,23 @@ export default function Ledger() {
     <div>
       <PageHead
         title="Finance"
-        action={<Button onClick={startNew}>{tab === "quotes" ? "New quote" : "New invoice"}</Button>}
+        action={(tab === "quotes" || tab === "invoices") ? (
+          <Button onClick={startNew}>{tab === "quotes" ? "New quote" : "New invoice"}</Button>
+        ) : null}
       />
 
       <div className="ws-folders">
         <button type="button" className={tab === "quotes" ? "is-on" : ""} onClick={() => { setTab("quotes"); setDoc(null); }}>Quotations</button>
         <button type="button" className={tab === "invoices" ? "is-on" : ""} onClick={() => { setTab("invoices"); setDoc(null); }}>Invoices</button>
+        <button type="button" className={tab === "cash" ? "is-on" : ""} onClick={() => { setTab("cash"); setDoc(null); }}>Cash book</button>
+        <button type="button" className={tab === "loans" ? "is-on" : ""} onClick={() => { setTab("loans"); setDoc(null); }}>Loan accounts</button>
       </div>
 
-      {!doc && list.length === 0 && <Empty>No {tab} yet.</Empty>}
+      {(tab === "cash" || tab === "loans") && <Books key={tab} tab={tab} />}
 
-      {!doc && list.length > 0 && (
+      {(tab === "quotes" || tab === "invoices") && !doc && list.length === 0 && <Empty>No {tab} yet.</Empty>}
+
+      {(tab === "quotes" || tab === "invoices") && !doc && list.length > 0 && (
         <div className="ws-table-wrap">
         <table className="ws-table ws-doc-table">
           <thead>
@@ -265,7 +272,7 @@ export default function Ledger() {
         </div>
       )}
 
-      {doc && (
+      {(tab === "quotes" || tab === "invoices") && doc && (
         <div className="ws-grid-2 ws-paper-field">
           <div className="ws-panel paper">
             <Kicker>{doc._kind === "invoice" || doc.ref?.startsWith("TI") ? "Invoice" : "Quotation"} {doc.ref}</Kicker>

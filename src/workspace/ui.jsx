@@ -40,9 +40,9 @@ export function Modal({ title, onClose, children, dark }) {
   );
 }
 
-export function Money({ value, currency = "USD" }) {
+export function Money({ value, currency = "USD", digits = 0 }) {
   const n = Number(value) || 0;
-  return <>{currency} {n.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</>;
+  return <>{currency} {n.toLocaleString("en-US", { minimumFractionDigits: digits, maximumFractionDigits: digits })}</>;
 }
 
 export function CrewName({ id, crew }) {

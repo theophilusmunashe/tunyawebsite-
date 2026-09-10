@@ -3,7 +3,7 @@ import { exportBackup, fileDelete, fileGet, fileListMeta, filePut, importBackup,
 import { uid } from "./lib/ids.js";
 import { seedIfEmpty, DEFAULT_CREW, DEFAULT_SETTINGS } from "./data/seed.js";
 
-const LISTS = ["crew", "tasks", "quotes", "invoices", "journeys", "movements", "visaCases", "briefs", "notices"];
+const LISTS = ["crew", "tasks", "quotes", "invoices", "cashbook", "loans", "journeys", "movements", "visaCases", "briefs", "notices"];
 const CHANNEL = "tunyafrika-workspace";
 
 const WorkspaceContext = createContext(null);
@@ -67,6 +67,8 @@ export function WorkspaceProvider({ children }) {
         tasks: [],
         quotes: [],
         invoices: [],
+        cashbook: [],
+        loans: [],
         journeys: [],
         movements: [],
         visaCases: [],

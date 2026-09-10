@@ -1,7 +1,7 @@
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
 import { esc } from "./ids.js";
-import { prettyDate } from "./time.js";
+import { prettyDate, todayISO } from "./time.js";
 
 const FONT_HREF = "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500&family=Poppins:wght@400;600&display=swap";
 
@@ -37,6 +37,14 @@ const SHEET_CSS = `
 .sheet .terms { margin-top: 36px; font-size: 13px; font-weight: 400; line-height: 1.7; color: #000; }
 .sheet .foot { margin-top: 28px; padding: 18px 32px 28px; border-top: 1px solid #000; font-size: 13px; color: #000; font-weight: 400; display: flex; justify-content: space-between; gap: 16px; }
 .sheet .gold { color: #000; font-weight: 400; }
+.sheet .lede { font-size: 14px; line-height: 1.65; margin: 0 0 18px; color: #000; font-weight: 400; }
+.sheet .sum { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin: 0 0 24px; }
+.sheet .sum.four { grid-template-columns: 1fr 1fr 1fr 1fr; }
+.sheet .sum div { border: 1px solid #000; padding: 12px 14px; }
+.sheet .sum strong { display: block; font-size: 16px; margin-top: 6px; font-weight: 600; }
+.sheet h2 { font-family: "Cormorant Garamond", Georgia, serif; font-weight: 500; font-size: 26px; margin: 28px 0 10px; color: #000; }
+.sheet.books td { padding: 8px 8px 8px 0; font-size: 13px; }
+.sheet.books th { padding: 6px 8px 6px 0; }
 `;
 
 function logoSrc(logo) {
@@ -152,6 +160,43 @@ export function documentHtml({ kind, doc, settings, logo }) {
 </html>`;
 }
 
+export function wrapSheet({ title, kicker, settings, logo, body, dense }) {
+  const company = settings.company || "Tunyafrika Xperiences";
+  const when = prettyDate(todayISO());
+  return `<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>${esc(title)}</title>
+  <link rel="stylesheet" href="${FONT_HREF}" />
+  <style>${SHEET_CSS}</style>
+</head>
+<body style="margin:0;background:#fff;">
+  <div class="sheet${dense ? " books" : ""}">
+    <div class="mast">
+      <div>
+        <img src="${logoSrc(logo)}" alt="${esc(company)}" />
+        <div class="kicker">${esc(kicker || "Company records")}</div>
+        <h1>${esc(title)}</h1>
+      </div>
+      <div class="meta">
+        ${esc(settings.address1 || "")}<br/>
+        ${esc(settings.address2 || "")}<br/>
+        ${esc(settings.phone || "")}<br/>
+        ${esc(settings.email || OFFICE_EMAIL)}<br/>
+        Printed ${esc(when)}
+      </div>
+    </div>
+    <div class="body">${body}</div>
+    <div class="foot">
+      <div>${esc(settings.web || "www.tunyafrika.com")} · ${esc(settings.email || OFFICE_EMAIL)}</div>
+      <div class="gold">Company records · not a tax invoice</div>
+    </div>
+  </div>
+</body>
+</html>`;
+}
+
 export function openPrint(html) {
   const frame = window.open("", "_blank", "noopener,width=900,height=1200");
   if (!frame) return false;
@@ -228,9 +273,7 @@ function loadIframe(html) {
   return iframe;
 }
 
-async function buildPdf({ kind, doc, settings }) {
-  const logo = await logoDataUrl().catch(() => `${window.location.origin}/assets/logo-cream.png`);
-  const html = documentHtml({ kind, doc, settings, logo });
+async function pdfFromHtml(html) {
   const iframe = loadIframe(html);
   try {
     await new Promise((resolve) => {
@@ -277,6 +320,17 @@ async function buildPdf({ kind, doc, settings }) {
   } finally {
     iframe.remove();
   }
+}
+
+async function buildPdf({ kind, doc, settings }) {
+  const logo = await logoDataUrl().catch(() => `${window.location.origin}/assets/logo-cream.png`);
+  return pdfFromHtml(documentHtml({ kind, doc, settings, logo }));
+}
+
+export async function downloadHtmlPdf(html, filename) {
+  const pdf = await pdfFromHtml(html);
+  pdf.save(filename || "document.pdf");
+  return true;
 }
 
 export async function downloadPdf({ kind, doc, settings, filename }) {
