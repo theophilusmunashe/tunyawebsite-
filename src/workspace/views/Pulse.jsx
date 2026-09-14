@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { adminBootstrap } from "../accomodations/api.js";
+import { adminBootstrap } from "../../accomodations/api.js";
 import { useWorkspace } from "../store.jsx";
 import { Money, PageHead } from "../ui.jsx";
 
