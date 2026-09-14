@@ -58,6 +58,15 @@ export default function AccomodationDetail() {
   const send = async (e) => {
     e.preventDefault();
     setFormError("");
+    const dateOk = (value) => !value || /^\d{4}-\d{2}-\d{2}$/.test(value);
+    if (!dateOk(form.checkIn) || !dateOk(form.checkOut)) {
+      setFormError("Use the date pickers for check-in and check-out.");
+      return;
+    }
+    if (form.checkIn && form.checkOut && form.checkOut < form.checkIn) {
+      setFormError("Check-out should be on or after check-in.");
+      return;
+    }
     setSending(true);
     try {
       await submitEnquiry({ listingId: listing.id, ...form });
