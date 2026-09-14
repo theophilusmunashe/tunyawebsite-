@@ -1,10 +1,24 @@
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { adminBootstrap } from "../accomodations/api.js";
 import { useWorkspace } from "../store.jsx";
 import { Money, PageHead } from "../ui.jsx";
 
 export default function Pulse() {
-  const { you, journeys, files, quotes, invoices, settings, updateSettings } = useWorkspace();
+  const { you, journeys, files, quotes, settings, updateSettings } = useWorkspace();
   const live = journeys.filter((j) => ["confirmed", "in-country", "quoted"].includes(j.stage));
+  const [newEnquiries, setNewEnquiries] = useState(0);
+
+  useEffect(() => {
+    let alive = true;
+    adminBootstrap()
+      .then((data) => {
+        if (!alive) return;
+        setNewEnquiries((data.enquiries || []).filter((e) => e.status === "new").length);
+      })
+      .catch(() => {});
+    return () => { alive = false; };
+  }, []);
 
   return (
     <div>
@@ -16,7 +30,7 @@ export default function Pulse() {
       <div className="ws-stats">
         <div className="ws-stat"><div className="ws-kicker">Bookings</div><b>{journeys.length}</b></div>
         <div className="ws-stat"><div className="ws-kicker">Quotes</div><b>{quotes.length}</b></div>
-        <div className="ws-stat"><div className="ws-kicker">Invoices</div><b>{invoices.length}</b></div>
+        <div className="ws-stat"><div className="ws-kicker">Stay enquiries</div><b>{newEnquiries}</b></div>
         <div className="ws-stat"><div className="ws-kicker">Files</div><b>{files.length}</b></div>
       </div>
 
@@ -35,7 +49,8 @@ export default function Pulse() {
           ))}
           <div className="ws-actions">
             <Link to="/admin/journeys" className="ws-btn slim ghost">Bookings</Link>
-            <Link to="/admin/ledger" className="ws-btn slim">Finance</Link>
+            <Link to="/admin/accomodations" className="ws-btn slim">Accommodations</Link>
+            <Link to="/admin/ledger" className="ws-btn slim ghost">Finance</Link>
           </div>
         </div>
 

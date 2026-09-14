@@ -11,3 +11,9 @@ dist
 studio/node_modules
 studio/dist
 studio/.sanity
+
+# Accommodations marketplace runtime data (generated on the server / local Vite API)
+public/api/accomodations-data/store.json
+public/api/accomodations-data/*.tmp
+public/accomodations-media/*
+!public/accomodations-media/.gitkeep

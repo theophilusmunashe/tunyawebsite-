@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Header from "./components/Header.jsx";
 import Footer from "./components/Footer.jsx";
 import SocialConnect from "./components/SocialConnect.jsx";
@@ -27,9 +28,28 @@ const PAGES = {
 };
 
 export default function App() {
+  const navigate = useNavigate();
   const [page, setPage] = useState("home");
 
+  useEffect(() => {
+    try {
+      const next = sessionStorage.getItem("tunya-go-page");
+      if (next && PAGES[next]) {
+        sessionStorage.removeItem("tunya-go-page");
+        setPage(next);
+        window.scrollTo({ top: 0, behavior: "auto" });
+      }
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
   const go = (next) => {
+    if (next === "accomodations" || next === "/accomodations") {
+      navigate("/accomodations");
+      window.scrollTo({ top: 0, behavior: "auto" });
+      return;
+    }
     setPage(next);
     window.scrollTo({ top: 0, behavior: "auto" });
   };

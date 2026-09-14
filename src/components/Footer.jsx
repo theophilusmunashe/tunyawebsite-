@@ -30,7 +30,14 @@ export default function Footer({ go }) {
             <div style={headingStyle}>{f.exploreHeading}</div>
             <div style={{display: "grid", gap: "10px", marginTop: "16px"}}>
               {f.explore.map((item) => (
-                <div key={item.label} className="x3" onClick={() => go(item.page)} style={linkStyle}>{item.label}</div>
+                <div
+                  key={item.label}
+                  className="x3"
+                  onClick={() => (item.href ? window.location.assign(item.href) : go(item.page))}
+                  style={linkStyle}
+                >
+                  {item.label}
+                </div>
               ))}
             </div>
           </div>

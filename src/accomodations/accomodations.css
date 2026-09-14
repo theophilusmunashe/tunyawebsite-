@@ -1,0 +1,327 @@
+/* Public accommodations marketplace */
+.acc-page {
+  --acc-ink: #0d2b1e;
+  --acc-green: #04301f;
+  --acc-gold: #b3955c;
+  --acc-cream: #faf3e8;
+  background:
+    radial-gradient(1200px 480px at 10% -10%, rgba(179, 149, 92, 0.16), transparent 60%),
+    linear-gradient(180deg, #f4ebe0 0%, var(--acc-cream) 40%, #f7f0e6 100%);
+  min-height: 70vh;
+}
+
+.acc-kicker {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--acc-gold);
+}
+
+.acc-hero {
+  background:
+    linear-gradient(120deg, rgba(4, 48, 31, 0.96), rgba(4, 48, 31, 0.82)),
+    url("/assets/br-stay-deck.jpg") center/cover;
+  color: var(--acc-cream);
+  padding: 88px 48px 72px;
+}
+
+.acc-hero-copy {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.acc-hero h1 {
+  font-family: "Cormorant Garamond", serif;
+  font-weight: 500;
+  font-size: clamp(42px, 7vw, 72px);
+  line-height: 1.05;
+  margin: 14px 0 0;
+  max-width: 16ch;
+}
+
+.acc-hero p {
+  margin: 18px 0 0;
+  font-weight: 300;
+  font-size: 18px;
+  line-height: 1.7;
+  max-width: 46ch;
+  color: rgba(250, 243, 232, 0.88);
+}
+
+.acc-shell {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 48px 48px 96px;
+}
+
+.acc-empty {
+  padding: 40px 0;
+  font-weight: 300;
+  font-size: 17px;
+  color: rgba(13, 43, 30, 0.72);
+}
+
+.acc-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
+}
+
+.acc-card {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(4, 48, 31, 0.1);
+  overflow: hidden;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.acc-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 18px 40px rgba(4, 48, 31, 0.12);
+}
+
+.acc-card-media {
+  aspect-ratio: 4 / 3;
+  background: var(--acc-green);
+  overflow: hidden;
+}
+
+.acc-card-media img,
+.acc-gallery-main img,
+.acc-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.acc-card-fallback {
+  height: 100%;
+  display: grid;
+  place-items: center;
+  color: rgba(250, 243, 232, 0.7);
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.acc-card-body {
+  padding: 18px 18px 22px;
+}
+
+.acc-card-body h2,
+.acc-detail-copy h1 {
+  font-family: "Cormorant Garamond", serif;
+  font-weight: 500;
+  margin: 8px 0 0;
+  line-height: 1.15;
+}
+
+.acc-card-body h2 { font-size: 28px; }
+.acc-detail-copy h1 { font-size: clamp(36px, 5vw, 54px); }
+
+.acc-sub {
+  margin: 8px 0 0;
+  font-weight: 300;
+  color: rgba(13, 43, 30, 0.72);
+}
+
+.acc-price {
+  margin-top: 14px;
+  color: var(--acc-green);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.acc-price.big { font-size: 22px; }
+
+.acc-note {
+  margin-top: 4px;
+  font-size: 13px;
+  font-weight: 300;
+  color: rgba(13, 43, 30, 0.65);
+}
+
+.acc-back {
+  display: inline-block;
+  margin-bottom: 24px;
+  color: var(--acc-green);
+  text-decoration: none;
+  font-size: 13px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.acc-detail-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 36px;
+  align-items: start;
+}
+
+.acc-gallery-main {
+  aspect-ratio: 4 / 3;
+  background: var(--acc-green);
+  overflow: hidden;
+}
+
+.acc-thumbs {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.acc-thumb {
+  border: 2px solid transparent;
+  padding: 0;
+  background: none;
+  aspect-ratio: 1;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.acc-thumb.is-active { border-color: var(--acc-gold); }
+
+.acc-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  margin-top: 16px;
+  font-size: 14px;
+  color: rgba(13, 43, 30, 0.75);
+}
+
+.acc-summary {
+  margin: 22px 0 0;
+  font-weight: 300;
+  font-size: 17px;
+  line-height: 1.8;
+}
+
+.acc-amenities {
+  margin-top: 28px;
+}
+
+.acc-amenities ul {
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+
+.acc-amenities li {
+  position: relative;
+  padding-left: 16px;
+  font-weight: 300;
+}
+
+.acc-amenities li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 6px;
+  height: 6px;
+  background: var(--acc-gold);
+}
+
+.acc-enquire {
+  margin-top: 34px;
+  padding: 24px;
+  background: rgba(4, 48, 31, 0.04);
+  border: 1px solid rgba(4, 48, 31, 0.12);
+}
+
+.acc-enquire h2 {
+  font-family: "Cormorant Garamond", serif;
+  font-weight: 500;
+  font-size: 32px;
+  margin: 8px 0 0;
+}
+
+.acc-enquire > p {
+  margin: 10px 0 0;
+  font-weight: 300;
+  line-height: 1.7;
+  color: rgba(13, 43, 30, 0.75);
+}
+
+.acc-form {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.acc-form label {
+  display: grid;
+  gap: 6px;
+}
+
+.acc-form span {
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(13, 43, 30, 0.65);
+}
+
+.acc-form input,
+.acc-form textarea {
+  width: 100%;
+  border: 1px solid rgba(13, 43, 30, 0.25);
+  background: #fff;
+  color: var(--acc-ink);
+  padding: 12px 14px;
+  font: inherit;
+}
+
+.acc-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.acc-cta {
+  justify-self: start;
+  border: 0;
+  background: var(--acc-green);
+  color: var(--acc-cream);
+  padding: 14px 22px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.acc-cta:disabled { opacity: 0.65; cursor: wait; }
+
+.acc-form-error {
+  color: #8a1f1f;
+  font-size: 14px;
+}
+
+.acc-sent {
+  margin-top: 18px;
+  padding: 16px;
+  background: #04301f;
+  color: #faf3e8;
+  font-weight: 300;
+  line-height: 1.6;
+}
+
+@media (max-width: 980px) {
+  .acc-grid { grid-template-columns: 1fr 1fr; }
+  .acc-detail-grid { grid-template-columns: 1fr; }
+  .acc-hero, .acc-shell { padding-left: 24px; padding-right: 24px; }
+}
+
+@media (max-width: 640px) {
+  .acc-grid { grid-template-columns: 1fr; }
+  .acc-form-row { grid-template-columns: 1fr; }
+  .acc-hero { padding-top: 64px; padding-bottom: 56px; }
+}

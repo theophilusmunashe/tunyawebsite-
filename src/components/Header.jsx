@@ -35,6 +35,14 @@ export default function Header({ go, page }) {
     setMenu(false);
     setNavOpen(false);
     dismissHint();
+    if (typeof next === "object" && next?.href) {
+      if (next.href.startsWith("http")) {
+        window.open(next.href, "_blank", "noopener");
+        return;
+      }
+      window.location.assign(next.href);
+      return;
+    }
     go(next);
   };
 
@@ -98,7 +106,14 @@ export default function Header({ go, page }) {
           </div>
           <div className="site-nav" style={{display: "flex", alignItems: "center", gap: "34px"}}>
             {nav.primary.map((item) => (
-              <div key={item.label} className="x10" onClick={() => visit(item.page)} style={linkStyle}>{item.label}</div>
+              <div
+                key={item.label}
+                className="x10"
+                onClick={() => visit(item.href ? { href: item.href } : item.page)}
+                style={{...linkStyle, ...(page === item.page || (item.href === "/accomodations" && page === "accomodations") ? { borderBottomColor: "#b3955c", color: "#faf3e8" } : {})}}
+              >
+                {item.label}
+              </div>
             ))}
             <div style={{position: "relative"}}>
               <div className="x10" onClick={() => setMenu(v => !v)} style={{...linkStyle, display: "flex", alignItems: "center", gap: "8px"}}>
@@ -108,7 +123,7 @@ export default function Header({ go, page }) {
               {menu && (
                 <div style={{position: "absolute", top: "100%", right: "0", marginTop: "18px", minWidth: "268px", background: "#04301f", border: "1px solid rgba(179,149,92,0.5)", padding: "8px 0"}}>
                   {nav.menu.map((item) => (
-                    <div key={item.label} className="x11" onClick={() => visit(item.page)} style={menuItemStyle}>{item.label}</div>
+                    <div key={item.label} className="x11" onClick={() => visit(item.href ? { href: item.href } : item.page)} style={menuItemStyle}>{item.label}</div>
                   ))}
                 </div>
               )}
@@ -120,11 +135,11 @@ export default function Header({ go, page }) {
         {navOpen && (
           <div className="site-mobile-nav">
             {nav.primary.map((item) => (
-              <div key={item.label} className="x11" onClick={() => visit(item.page)}>{item.label}</div>
+              <div key={item.label} className="x11" onClick={() => visit(item.href ? { href: item.href } : item.page)}>{item.label}</div>
             ))}
             <div className="site-mobile-label">{nav.menuLabel}</div>
             {nav.menu.map((item) => (
-              <div key={item.label} className="x11 site-mobile-sub" onClick={() => visit(item.page)}>{item.label}</div>
+              <div key={item.label} className="x11 site-mobile-sub" onClick={() => visit(item.href ? { href: item.href } : item.page)}>{item.label}</div>
             ))}
             <a className="x11" href={nav.meetTunya.href} target="_blank" rel="noopener">{nav.meetTunya.label}</a>
             <a className="x12 site-mobile-cta" href={nav.cta.href} target="_blank" rel="noopener">{nav.cta.label}</a>
