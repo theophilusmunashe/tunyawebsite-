@@ -8,7 +8,7 @@ import {
   saveEnquiry,
   saveListing,
   saveProvider,
-  uploadListingImage
+  uploadListingImages
 } from "../../accomodations/api.js";
 import {
   ENQUIRY_STATUSES,
@@ -40,6 +40,8 @@ export default function AccomodationsAdmin() {
   const [amenitiesDraft, setAmenitiesDraft] = useState("");
   const [enquiryForm, setEnquiryForm] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState("");
+  const [dragOver, setDragOver] = useState(false);
 
   const refresh = useCallback(async () => {
     const data = await adminBootstrap();
@@ -107,34 +109,42 @@ export default function AccomodationsAdmin() {
   };
 
   const onUpload = async (files) => {
-    if (!listingForm?.id) {
-      const saved = await persistListing();
-      if (!saved?.id) return;
-      await uploadMany(saved.id, files);
+    const list = [...(files || [])].filter((f) => f && (/^image\//i.test(f.type || "") || /\.(jpe?g|png|webp|gif)$/i.test(f.name || "")));
+    if (!list.length) {
+      toast("Choose JPG, PNG, WEBP or GIF photos.");
       return;
     }
-    await uploadMany(listingForm.id, files);
+    if (list.length > 30) {
+      toast("Upload up to 30 photos at a time.");
+      return;
+    }
+    let listingId = listingForm?.id;
+    if (!listingId) {
+      const saved = await persistListing();
+      if (!saved?.id) return;
+      listingId = saved.id;
+    }
+    await uploadMany(listingId, list);
   };
 
   const uploadMany = async (listingId, fileList) => {
     const files = [...fileList];
     if (!files.length) return;
     setUploading(true);
+    setUploadProgress(`Uploading 0/${files.length}…`);
     try {
-      let latest = null;
-      for (const file of files) {
-        const data = await uploadListingImage(listingId, file);
-        latest = data.listing;
-      }
-      if (latest) {
-        setListingForm(latest);
-        setListings((list) => list.map((l) => (l.id === latest.id ? latest : l)));
-        toast(files.length > 1 ? `${files.length} photos added.` : "Photo added.");
-      }
+      const data = await uploadListingImages(listingId, files, {
+        onProgress: (done, total) => setUploadProgress(`Uploading ${done}/${total}…`)
+      });
+      setListingForm(data.listing);
+      setListings((list) => list.map((l) => (l.id === data.listing.id ? data.listing : l)));
+      const extra = (data.errors || []).length ? ` ${data.errors.length} skipped.` : "";
+      toast(`${data.added} photo${data.added === 1 ? "" : "s"} added.${extra}`);
     } catch (err) {
-      toast(err.message || "Could not upload photo.");
+      toast(err.message || "Could not upload photos.");
     } finally {
       setUploading(false);
+      setUploadProgress("");
     }
   };
 
@@ -361,10 +371,22 @@ export default function AccomodationsAdmin() {
           </Field>
 
           <div className="ws-kicker" style={{ marginTop: 12 }}>Photos</div>
-          <p className="ws-lede">Guests see these in the gallery. You can add many at once.</p>
-          <div className="ws-actions">
-            <label className="ws-btn slim ghost" style={{ display: "inline-flex", alignItems: "center", cursor: uploading ? "wait" : "pointer" }}>
-              {uploading ? "Uploading…" : "Upload photos"}
+          <p className="ws-lede">Drop many photos at once, or click to select a whole folder of images (up to 30).</p>
+          <div
+            className={`ws-upload-drop${dragOver ? " is-over" : ""}${uploading ? " is-busy" : ""}`}
+            onDragEnter={(e) => { e.preventDefault(); setDragOver(true); }}
+            onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+            onDragLeave={(e) => { e.preventDefault(); setDragOver(false); }}
+            onDrop={(e) => {
+              e.preventDefault();
+              setDragOver(false);
+              if (!uploading) onUpload(e.dataTransfer.files);
+            }}
+          >
+            <strong>{uploading ? (uploadProgress || "Uploading…") : "Bulk upload photos"}</strong>
+            <span>JPG, PNG, WEBP or GIF · guests see these in the gallery</span>
+            <label className="ws-btn slim" style={{ display: "inline-flex", alignItems: "center", cursor: uploading ? "wait" : "pointer", marginTop: 10 }}>
+              {uploading ? "Please wait…" : "Choose photos"}
               <input
                 type="file"
                 accept="image/jpeg,image/png,image/webp,image/gif"
@@ -389,6 +411,9 @@ export default function AccomodationsAdmin() {
               </div>
             ))}
           </div>
+          {(listingForm.images || []).length > 0 && (
+            <p className="ws-lede" style={{ marginTop: 8 }}>{listingForm.images.length} photo{(listingForm.images || []).length === 1 ? "" : "s"} on this stay.</p>
+          )}
 
           <div className="ws-actions">
             <Button onClick={() => persistListing()}>Save</Button>

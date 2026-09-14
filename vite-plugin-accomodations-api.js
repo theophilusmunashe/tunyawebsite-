@@ -78,6 +78,35 @@ function findById(list, id) {
   return [idx, idx >= 0 ? list[idx] : null];
 }
 
+function storeListingImage(dataBase64, filename, caption, listingId) {
+  let raw = String(dataBase64 || "").replace(/\s+/g, "");
+  if (raw.startsWith("data:")) raw = raw.split(",")[1] || "";
+  const bin = Buffer.from(raw, "base64");
+  if (bin.length < 32) return { ok: false, error: "Image data was invalid." };
+  if (bin.length > 8 * 1024 * 1024) return { ok: false, error: "Image is too large (max 8MB)." };
+  const head = bin.subarray(0, 12);
+  let ext = "jpg";
+  if (head[0] === 0x89 && head[1] === 0x50) ext = "png";
+  else if (head[0] === 0x47 && head[1] === 0x49) ext = "gif";
+  else if (head.toString("ascii", 0, 4) === "RIFF" && head.toString("ascii", 8, 12) === "WEBP") ext = "webp";
+  else if (!(head[0] === 0xff && head[1] === 0xd8)) {
+    return { ok: false, error: "Use a JPG, PNG, WEBP or GIF image." };
+  }
+  const imageId = uid("img");
+  const safeName = `${listingId}-${imageId}.${ext}`;
+  fs.mkdirSync(mediaDir, { recursive: true });
+  fs.writeFileSync(path.join(mediaDir, safeName), bin);
+  return {
+    ok: true,
+    image: {
+      id: imageId,
+      url: `/accomodations-media/${safeName}`,
+      caption: String(caption || "").trim(),
+      name: String(filename || "photo.jpg").replace(/[^A-Za-z0-9._-]/g, "") || "photo.jpg"
+    }
+  };
+}
+
 async function readBody(req) {
   const chunks = [];
   for await (const chunk of req) chunks.push(chunk);
@@ -250,7 +279,11 @@ async function handle(req, res) {
       else if (typeof listing.amenities === "string") {
         amenities = listing.amenities.split(/[\n,]+/).map((s) => s.trim()).filter(Boolean);
       }
-      const images = (listing.images || existing?.images || [])
+      let sourceImages = listing.images;
+      if (!Array.isArray(sourceImages) || (sourceImages.length === 0 && existing)) {
+        sourceImages = existing?.images || [];
+      }
+      const images = sourceImages
         .filter((img) => img && img.url)
         .map((img) => ({
           id: img.id || uid("img"),
@@ -260,6 +293,9 @@ async function handle(req, res) {
       let publishedAt = existing?.publishedAt || 0;
       if (status === "published" && !publishedAt) publishedAt = now;
       else publishedAt = listing.publishedAt ?? publishedAt;
+      let coverUrl = String(listing.coverUrl || "").trim();
+      if (!coverUrl && existing) coverUrl = String(existing.coverUrl || "").trim();
+      if (!coverUrl && images[0]) coverUrl = images[0].url;
       const saved = {
         id,
         providerId: String(listing.providerId || "").trim(),
@@ -279,7 +315,7 @@ async function handle(req, res) {
           rooms: String(capacity.rooms || "").trim()
         },
         images,
-        coverUrl: String(listing.coverUrl || images[0]?.url || "").trim(),
+        coverUrl,
         location: {
           area: String(location.area || "").trim(),
           address: String(location.address || "").trim(),
@@ -328,47 +364,72 @@ async function handle(req, res) {
         send(res, 404, { ok: false, error: "Listing not found. Save the stay first, then add photos." });
         return true;
       }
-      let dataBase64 = String(body.dataBase64 || "").replace(/\s+/g, "");
-      if (dataBase64.startsWith("data:")) dataBase64 = dataBase64.split(",")[1] || "";
-      const bin = Buffer.from(dataBase64, "base64");
-      if (bin.length < 32) {
-        send(res, 400, { ok: false, error: "Image data was invalid." });
+      const stored = storeListingImage(body.dataBase64, body.filename || "photo.jpg", body.caption || "", listingId);
+      if (!stored.ok) {
+        send(res, 400, { ok: false, error: stored.error });
         return true;
       }
-      if (bin.length > 8 * 1024 * 1024) {
-        send(res, 400, { ok: false, error: "Image is too large (max 8MB)." });
-        return true;
-      }
-      const head = bin.subarray(0, 12);
-      let ext = "jpg";
-      if (head[0] === 0x89 && head[1] === 0x50) ext = "png";
-      else if (head[0] === 0x47 && head[1] === 0x49) ext = "gif";
-      else if (head.toString("ascii", 0, 4) === "RIFF" && head.toString("ascii", 8, 12) === "WEBP") ext = "webp";
-      else if (!(head[0] === 0xff && head[1] === 0xd8)) {
-        send(res, 400, { ok: false, error: "Use a JPG, PNG, WEBP or GIF image." });
-        return true;
-      }
-      const imageId = uid("img");
-      const safeName = `${listingId}-${imageId}.${ext}`;
-      fs.mkdirSync(mediaDir, { recursive: true });
-      fs.writeFileSync(path.join(mediaDir, safeName), bin);
-      const url = `/accomodations-media/${safeName}`;
-      const image = {
-        id: imageId,
-        url,
-        caption: String(body.caption || "").trim(),
-        name: String(body.filename || "photo.jpg")
-      };
-      const images = [...(listing.images || []), image];
+      const images = [...(listing.images || []), stored.image];
       const next = {
         ...listing,
         images,
-        coverUrl: listing.coverUrl || url,
+        coverUrl: listing.coverUrl || stored.image.url,
         updatedAt: Date.now()
       };
       store.listings[idx] = next;
       saveStore(store);
-      send(res, 200, { ok: true, image, listing: next });
+      send(res, 200, { ok: true, image: stored.image, listing: next });
+      return true;
+    }
+
+    if (action === "upload_images") {
+      requireAdmin(req, body);
+      const listingId = String(body.listingId || "").trim();
+      const [idx, listing] = findById(store.listings, listingId);
+      if (idx < 0) {
+        send(res, 404, { ok: false, error: "Listing not found. Save the stay first, then add photos." });
+        return true;
+      }
+      const batch = Array.isArray(body.images) ? body.images : [];
+      if (!batch.length) {
+        send(res, 400, { ok: false, error: "Add one or more photos." });
+        return true;
+      }
+      if (batch.length > 30) {
+        send(res, 400, { ok: false, error: "Upload up to 30 photos at a time." });
+        return true;
+      }
+      const images = [...(listing.images || [])];
+      const added = [];
+      const errors = [];
+      for (let i = 0; i < batch.length; i += 1) {
+        const item = batch[i] || {};
+        const stored = storeListingImage(
+          item.dataBase64,
+          item.filename || `photo-${i + 1}.jpg`,
+          item.caption || "",
+          listingId
+        );
+        if (!stored.ok) {
+          errors.push(`${item.filename || `Photo ${i + 1}`}: ${stored.error}`);
+          continue;
+        }
+        images.push(stored.image);
+        added.push(stored.image);
+      }
+      if (!added.length) {
+        send(res, 400, { ok: false, error: errors[0] || "Could not upload photos.", errors });
+        return true;
+      }
+      const next = {
+        ...listing,
+        images,
+        coverUrl: listing.coverUrl || images[0]?.url || "",
+        updatedAt: Date.now()
+      };
+      store.listings[idx] = next;
+      saveStore(store);
+      send(res, 200, { ok: true, added: added.length, images: added, errors, listing: next });
       return true;
     }
 

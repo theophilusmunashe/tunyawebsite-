@@ -136,6 +136,47 @@ function find_by_id($list, $id) {
   return [-1, null];
 }
 
+
+function store_listing_image($MEDIA_DIR, $listingId, $dataBase64, $filename, $caption) {
+  if (strpos($dataBase64, "data:") === 0) {
+    $parts = explode(",", $dataBase64, 2);
+    $dataBase64 = isset($parts[1]) ? $parts[1] : "";
+  }
+  $dataBase64 = preg_replace("/\s+/", "", (string)$dataBase64);
+  $bin = base64_decode($dataBase64, true);
+  if ($bin === false || strlen($bin) < 32) {
+    return ["ok" => false, "error" => "Image data was invalid."];
+  }
+  if (strlen($bin) > 8 * 1024 * 1024) {
+    return ["ok" => false, "error" => "Image is too large (max 8MB)."];
+  }
+  $ext = "jpg";
+  $b0 = isset($bin[0]) ? ord($bin[0]) : 0;
+  $b1 = isset($bin[1]) ? ord($bin[1]) : 0;
+  if ($b0 === 0x89 && $b1 === 0x50) $ext = "png";
+  elseif ($b0 === 0x47 && $b1 === 0x49) $ext = "gif";
+  elseif (substr($bin, 0, 4) === "RIFF" && substr($bin, 8, 4) === "WEBP") $ext = "webp";
+  elseif (!($b0 === 0xFF && $b1 === 0xD8)) {
+    return ["ok" => false, "error" => "Use a JPG, PNG, WEBP or GIF image."];
+  }
+  $imageId = uid("img");
+  $safeName = $listingId . "-" . $imageId . "." . $ext;
+  $abs = $MEDIA_DIR . "/" . $safeName;
+  if (file_put_contents($abs, $bin) === false) {
+    return ["ok" => false, "error" => "Could not store the image."];
+  }
+  return [
+    "ok" => true,
+    "image" => [
+      "id" => $imageId,
+      "url" => "/accomodations-media/" . $safeName,
+      "caption" => trim((string)$caption),
+      "name" => preg_replace("/[^A-Za-z0-9._-]/", "", (string)$filename) ?: "photo.jpg"
+    ]
+  ];
+}
+
+
 $method = $_SERVER["REQUEST_METHOD"];
 $action = "";
 $body = null;
@@ -301,8 +342,14 @@ switch ($action) {
     $pricing = is_array($listing["pricing"] ?? null) ? $listing["pricing"] : [];
     $capacity = is_array($listing["capacity"] ?? null) ? $listing["capacity"] : [];
     $location = is_array($listing["location"] ?? null) ? $listing["location"] : [];
+    // Photos are managed by upload/delete endpoints. Keep existing images on
+    // metadata saves so Publish/Save never wipe a bulk upload.
+    $sourceImages = $listing["images"] ?? null;
+    if (!is_array($sourceImages) || (count($sourceImages) === 0 && is_array($existing))) {
+      $sourceImages = $existing["images"] ?? [];
+    }
     $images = [];
-    foreach (($listing["images"] ?? ($existing["images"] ?? [])) as $img) {
+    foreach ($sourceImages as $img) {
       if (!is_array($img) || empty($img["url"])) continue;
       $images[] = [
         "id" => (string)($img["id"] ?? uid("img")),
@@ -328,6 +375,9 @@ switch ($action) {
       // keep publishedAt history if it existed
       $publishedAt = (int)($listing["publishedAt"] ?? $publishedAt);
     }
+    $coverUrl = trim((string)($listing["coverUrl"] ?? ""));
+    if ($coverUrl === "" && is_array($existing)) $coverUrl = trim((string)($existing["coverUrl"] ?? ""));
+    if ($coverUrl === "" && count($images)) $coverUrl = (string)$images[0]["url"];
     $saved = [
       "id" => $id,
       "providerId" => trim((string)($listing["providerId"] ?? "")),
@@ -347,7 +397,7 @@ switch ($action) {
         "rooms" => trim((string)($capacity["rooms"] ?? ""))
       ],
       "images" => $images,
-      "coverUrl" => trim((string)($listing["coverUrl"] ?? ($images[0]["url"] ?? ""))),
+      "coverUrl" => $coverUrl,
       "location" => [
         "area" => trim((string)($location["area"] ?? "")),
         "address" => trim((string)($location["address"] ?? "")),
@@ -390,47 +440,72 @@ switch ($action) {
   case "upload_image": {
     require_admin($EXPECTED_KEY);
     $listingId = trim((string)($body["listingId"] ?? ""));
-    $caption = trim((string)($body["caption"] ?? ""));
-    $filename = preg_replace("/[^A-Za-z0-9._-]/", "", (string)($body["filename"] ?? "photo.jpg"));
-    $dataBase64 = preg_replace("/\s+/", "", (string)($body["dataBase64"] ?? ""));
-    if (strpos($dataBase64, "data:") === 0) {
-      $parts = explode(",", $dataBase64, 2);
-      $dataBase64 = isset($parts[1]) ? $parts[1] : "";
-    }
     [$idx, $listing] = find_by_id($store["listings"], $listingId);
     if ($idx < 0) respond(404, ["ok" => false, "error" => "Listing not found. Save the stay first, then add photos."]);
-    $bin = base64_decode($dataBase64, true);
-    if ($bin === false || strlen($bin) < 32) {
-      respond(400, ["ok" => false, "error" => "Image data was invalid."]);
+    $stored = store_listing_image(
+      $MEDIA_DIR,
+      $listingId,
+      (string)($body["dataBase64"] ?? ""),
+      (string)($body["filename"] ?? "photo.jpg"),
+      (string)($body["caption"] ?? "")
+    );
+    if (empty($stored["ok"])) {
+      respond(400, ["ok" => false, "error" => $stored["error"] ?? "Could not upload image."]);
     }
-    if (strlen($bin) > 8 * 1024 * 1024) {
-      respond(400, ["ok" => false, "error" => "Image is too large (max 8MB)."]);
-    }
-    $ext = "jpg";
-    $b0 = isset($bin[0]) ? ord($bin[0]) : 0;
-    $b1 = isset($bin[1]) ? ord($bin[1]) : 0;
-    if ($b0 === 0x89 && $b1 === 0x50) $ext = "png";
-    elseif ($b0 === 0x47 && $b1 === 0x49) $ext = "gif";
-    elseif (substr($bin, 0, 4) === "RIFF" && substr($bin, 8, 4) === "WEBP") $ext = "webp";
-    elseif (!($b0 === 0xFF && $b1 === 0xD8)) {
-      respond(400, ["ok" => false, "error" => "Use a JPG, PNG, WEBP or GIF image."]);
-    }
-    $imageId = uid("img");
-    $safeName = $listingId . "-" . $imageId . "." . $ext;
-    $abs = $MEDIA_DIR . "/" . $safeName;
-    if (file_put_contents($abs, $bin) === false) {
-      respond(500, ["ok" => false, "error" => "Could not store the image."]);
-    }
-    $url = "/accomodations-media/" . $safeName;
-    $image = ["id" => $imageId, "url" => $url, "caption" => $caption, "name" => $filename];
+    $image = $stored["image"];
     $images = $listing["images"] ?? [];
     $images[] = $image;
     $listing["images"] = $images;
-    if (empty($listing["coverUrl"])) $listing["coverUrl"] = $url;
+    if (empty($listing["coverUrl"])) $listing["coverUrl"] = $image["url"];
     $listing["updatedAt"] = (int)(microtime(true) * 1000);
     $store["listings"][$idx] = $listing;
     save_store($STORE_FILE, $store);
     respond(200, ["ok" => true, "image" => $image, "listing" => $listing]);
+  }
+
+  case "upload_images": {
+    require_admin($EXPECTED_KEY);
+    $listingId = trim((string)($body["listingId"] ?? ""));
+    [$idx, $listing] = find_by_id($store["listings"], $listingId);
+    if ($idx < 0) respond(404, ["ok" => false, "error" => "Listing not found. Save the stay first, then add photos."]);
+    $batch = $body["images"] ?? null;
+    if (!is_array($batch) || count($batch) === 0) {
+      respond(400, ["ok" => false, "error" => "Add one or more photos."]);
+    }
+    if (count($batch) > 30) {
+      respond(400, ["ok" => false, "error" => "Upload up to 30 photos at a time."]);
+    }
+    $images = $listing["images"] ?? [];
+    $added = [];
+    $errors = [];
+    foreach ($batch as $i => $item) {
+      if (!is_array($item)) {
+        $errors[] = "Photo " . ($i + 1) . " was invalid.";
+        continue;
+      }
+      $stored = store_listing_image(
+        $MEDIA_DIR,
+        $listingId,
+        (string)($item["dataBase64"] ?? ""),
+        (string)($item["filename"] ?? ("photo-" . ($i + 1) . ".jpg")),
+        (string)($item["caption"] ?? "")
+      );
+      if (empty($stored["ok"])) {
+        $errors[] = (string)($item["filename"] ?? ("Photo " . ($i + 1))) . ": " . ($stored["error"] ?? "failed");
+        continue;
+      }
+      $images[] = $stored["image"];
+      $added[] = $stored["image"];
+    }
+    if (count($added) === 0) {
+      respond(400, ["ok" => false, "error" => $errors[0] ?? "Could not upload photos.", "errors" => $errors]);
+    }
+    $listing["images"] = $images;
+    if (empty($listing["coverUrl"]) && count($images)) $listing["coverUrl"] = $images[0]["url"];
+    $listing["updatedAt"] = (int)(microtime(true) * 1000);
+    $store["listings"][$idx] = $listing;
+    save_store($STORE_FILE, $store);
+    respond(200, ["ok" => true, "added" => count($added), "images" => $added, "errors" => $errors, "listing" => $listing]);
   }
 
   case "delete_image": {

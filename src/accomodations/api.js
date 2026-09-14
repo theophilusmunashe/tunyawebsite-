@@ -85,6 +85,42 @@ export async function uploadListingImage(listingId, file, caption = "") {
   return data;
 }
 
+export async function uploadListingImages(listingId, files, { onProgress } = {}) {
+  const list = [...files].filter(Boolean);
+  if (!list.length) throw new Error("Add one or more photos.");
+  if (list.length > 30) throw new Error("Upload up to 30 photos at a time.");
+
+  // Send in chunks so large phone-photo batches stay under server body limits.
+  const chunkSize = 5;
+  let listing = null;
+  let added = 0;
+  const errors = [];
+  for (let i = 0; i < list.length; i += chunkSize) {
+    const slice = list.slice(i, i + chunkSize);
+    const images = [];
+    for (const file of slice) {
+      images.push({
+        filename: file.name || "photo.jpg",
+        caption: "",
+        dataBase64: await fileToDataUrl(file)
+      });
+    }
+    try {
+      const data = await adminPost("upload_images", { listingId, images });
+      listing = data.listing;
+      added += Number(data.added) || (data.images || []).length;
+      if (Array.isArray(data.errors)) errors.push(...data.errors);
+    } catch (err) {
+      errors.push(err.message || "Chunk failed.");
+    }
+    if (onProgress) onProgress(Math.min(list.length, i + slice.length), list.length);
+  }
+  if (!listing || added === 0) {
+    throw new Error(errors[0] || "Could not upload photos.");
+  }
+  return { listing, added, errors };
+}
+
 export async function deleteListingImage(listingId, imageId) {
   const data = await adminPost("delete_image", { listingId, imageId });
   return data.listing;
