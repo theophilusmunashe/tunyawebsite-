@@ -50,6 +50,11 @@ export default function App() {
       window.scrollTo({ top: 0, behavior: "auto" });
       return;
     }
+    if (next === "content" || next === "/content") {
+      navigate("/content");
+      window.scrollTo({ top: 0, behavior: "auto" });
+      return;
+    }
     setPage(next);
     window.scrollTo({ top: 0, behavior: "auto" });
   };

@@ -8,7 +8,8 @@ export const site = {
       { label: "Victoria Falls", page: "falls" },
       { label: "Xperiences", page: "xp" },
       { label: "Stays", page: "stays" },
-      { label: "Accommodations", href: "/accomodations", page: "accomodations" }
+      { label: "Accommodations", href: "/accomodations", page: "accomodations" },
+      { label: "Updates", href: "/content", page: "content" }
     ],
     menuLabel: "Beyond the Falls",
     menu: [
@@ -29,6 +30,7 @@ export const site = {
       { label: "Xperiences", page: "xp" },
       { label: "Stays", page: "stays" },
       { label: "Accommodations", href: "/accomodations" },
+      { label: "Updates", href: "/content" },
       { label: "Beyond the Falls", page: "beyond" },
       { label: "Customs & Immigration", page: "visas" },
       { label: "About Tunyafrika", page: "about" },

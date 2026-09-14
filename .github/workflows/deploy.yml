@@ -38,3 +38,5 @@ jobs:
           exclude: |
             **/accomodations-data/store.json
             **/accomodations-data/*.tmp
+            **/content-data/store.json
+            **/content-data/*.tmp

@@ -17,3 +17,7 @@ public/api/accomodations-data/store.json
 public/api/accomodations-data/*.tmp
 public/accomodations-media/*
 !public/accomodations-media/.gitkeep
+
+# Content engine runtime data
+public/api/content-data/store.json
+public/api/content-data/*.tmp
