@@ -5,6 +5,7 @@ import Root from "./Root.jsx";
 import { ContentProvider } from "./content/ContentProvider.jsx";
 import "./styles.css";
 import "./accomodations/accomodations.css";
+import "./content-engine/content.css";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>

@@ -110,7 +110,7 @@ export default function Header({ go, page }) {
                 key={item.label}
                 className="x10"
                 onClick={() => visit(item.href ? { href: item.href } : item.page)}
-                style={{...linkStyle, ...(page === item.page || (item.href === "/accomodations" && page === "accomodations") ? { borderBottomColor: "#b3955c", color: "#faf3e8" } : {})}}
+                style={{...linkStyle, ...(page === item.page || (item.href === "/accomodations" && page === "accomodations") || (item.href === "/content" && page === "content") ? { borderBottomColor: "#b3955c", color: "#faf3e8" } : {})}}
               >
                 {item.label}
               </div>

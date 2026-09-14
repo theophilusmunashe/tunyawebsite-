@@ -7,6 +7,7 @@ import Vault from "./views/Vault.jsx";
 import Ledger from "./views/Ledger.jsx";
 import Journeys from "./views/Journeys.jsx";
 import Accomodations from "./views/Accomodations.jsx";
+import Content from "./views/Content.jsx";
 import Crew from "./views/Crew.jsx";
 import Settings from "./views/Settings.jsx";
 
@@ -19,6 +20,7 @@ const NAV = [
     { to: "/admin/accomodations", label: "Accommodations" }
   ]},
   { section: "Office", items: [
+    { to: "/admin/content", label: "Content" },
     { to: "/admin/vault", label: "Files" },
     { to: "/admin/ledger", label: "Finance" },
     { to: "/admin/crew", label: "Team" },
@@ -119,6 +121,7 @@ export default function Shell() {
             <Route path="ledger" element={<Ledger />} />
             <Route path="journeys" element={<Journeys />} />
             <Route path="accomodations" element={<Accomodations />} />
+            <Route path="content" element={<Content />} />
             <Route path="crew" element={<Crew />} />
             <Route path="settings" element={<Settings />} />
             <Route path="*" element={<Navigate to="/admin" replace />} />
