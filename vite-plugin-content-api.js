@@ -42,15 +42,26 @@ function findById(list, id) {
   return [idx, idx >= 0 ? list[idx] : null];
 }
 
+function decodeEntities(text = "") {
+  return String(text)
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;|&apos;/gi, "'")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(Number(n)))
+    .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCharCode(parseInt(h, 16)));
+}
+
 function stripText(html = "") {
-  return String(html)
-    .replace(/<[^>]+>/g, " ")
-    .replace(/&nbsp;/g, " ")
-    .replace(/&amp;/g, "&")
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/\s+/g, " ")
-    .trim();
+  // Decode first so escaped markup like &lt;a href=...&gt; becomes strip-able tags.
+  let text = decodeEntities(decodeEntities(html));
+  text = text.replace(/<[^>]*>/g, " ");
+  text = text.replace(/<[^>]*$/g, " "); // truncated tags from feed snippets
+  text = text.replace(/https?:\/\/\S+/g, " ");
+  text = decodeEntities(text);
+  return text.replace(/\s+/g, " ").trim();
 }
 
 function shorten(text, max = 220) {
@@ -122,9 +133,10 @@ function parseRss(xml) {
       || "";
     const publishedAt = pubRaw ? (Date.parse(stripText(pubRaw)) || 0) : 0;
     if (!title || !link) continue;
+    const summary = shorten(desc || title, 220) || shorten(title, 220);
     items.push({
       headline: shorten(title, 140),
-      summary: shorten(desc || title, 220),
+      summary,
       sourceName: sourceName || "News source",
       sourceUrl: link,
       publishedAt

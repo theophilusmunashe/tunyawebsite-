@@ -83,7 +83,19 @@ export async function renderUpdateCard(item, { logoSrc = "/assets/logo-cream.png
   // Headline
   ctx.fillStyle = "#faf3e8";
   ctx.font = "500 58px 'Cormorant Garamond', Georgia, serif";
-  const headlineLines = wrapLines(ctx, item.headline || "", size - 180, 4);
+  const headline = String(item.headline || "")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/<[^>]*$/g, " ")
+    .replace(/https?:\/\/\S+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  const summary = String(item.summary || "")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/<[^>]*$/g, " ")
+    .replace(/https?:\/\/\S+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  const headlineLines = wrapLines(ctx, headline, size - 180, 4);
   let y = 430;
   for (const line of headlineLines) {
     ctx.fillText(line, 90, y);
@@ -93,7 +105,7 @@ export async function renderUpdateCard(item, { logoSrc = "/assets/logo-cream.png
   // Short description
   ctx.fillStyle = "rgba(250,243,232,0.82)";
   ctx.font = "300 30px Poppins, sans-serif";
-  const summaryLines = wrapLines(ctx, item.summary || "", size - 180, 4);
+  const summaryLines = wrapLines(ctx, summary, size - 180, 4);
   y += 24;
   for (const line of summaryLines) {
     ctx.fillText(line, 90, y);

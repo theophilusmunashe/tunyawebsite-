@@ -23,8 +23,8 @@
     linear-gradient(115deg, rgba(4, 48, 31, 0.96), rgba(4, 48, 31, 0.72)),
     url("/assets/br-explore-rainbow.jpg") center/cover;
   color: var(--ce-cream);
-  padding: clamp(72px, 12vh, 120px) 48px 80px;
-  min-height: min(72vh, 640px);
+  padding: clamp(64px, 10vh, 100px) 48px 64px;
+  min-height: min(58vh, 520px);
   display: flex;
   align-items: flex-end;
 }
@@ -37,10 +37,11 @@
 }
 
 .ce-hero-logo {
-  width: clamp(160px, 22vw, 240px);
+  width: clamp(180px, 24vw, 280px);
   height: auto;
   display: block;
-  margin-bottom: 22px;
+  margin-bottom: 18px;
+  filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.35));
   animation: ce-fade 1.1s ease-out both;
 }
 

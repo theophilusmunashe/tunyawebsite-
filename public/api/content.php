@@ -133,9 +133,16 @@ function http_get($url) {
 }
 
 function strip_text($html) {
-  $text = html_entity_decode(strip_tags((string)$html), ENT_QUOTES | ENT_HTML5, "UTF-8");
+  // Decode before stripping so escaped markup (&lt;a...&gt;) does not leak into summaries.
+  $decoded = html_entity_decode((string)$html, ENT_QUOTES | ENT_HTML5, "UTF-8");
+  $decoded = html_entity_decode($decoded, ENT_QUOTES | ENT_HTML5, "UTF-8");
+  $text = strip_tags($decoded);
+  // Drop truncated tags and bare URLs left by feed snippets.
+  $text = preg_replace('/<[^>]*$/u', ' ', $text);
+  $text = preg_replace('#https?://\S+#u', ' ', $text);
+  $text = html_entity_decode($text, ENT_QUOTES | ENT_HTML5, "UTF-8");
   $text = preg_replace("/\s+/u", " ", $text);
-  return trim((string)$text);
+  return trim((string)$text, " \t\n\r\0\x0B.,;:-");
 }
 
 function shorten($text, $max = 220) {
@@ -211,9 +218,11 @@ function parse_rss_items($xml) {
     elseif (isset($entry->updated)) $pub = strtotime((string)$entry->updated) ?: 0;
 
     if ($title === "" || $link === "") continue;
+    $summary = shorten($desc !== "" ? $desc : $title, 220);
+    if ($summary === "") $summary = shorten($title, 220);
     $out[] = [
       "headline" => shorten($title, 140),
-      "summary" => shorten($desc !== "" ? $desc : $title, 220),
+      "summary" => $summary,
       "sourceName" => $sourceName !== "" ? $sourceName : "News source",
       "sourceUrl" => $link,
       "publishedAt" => $pub ? $pub * 1000 : 0

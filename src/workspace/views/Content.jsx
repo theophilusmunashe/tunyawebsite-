@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   adminBootstrap,
   captionFor,
+  cleanCopy,
   deleteItem,
   fetchUpdates,
   importUrl,
@@ -113,7 +114,13 @@ export default function ContentAdmin() {
     if (!open) return null;
     setBusy(true);
     try {
-      const saved = await saveItem({ ...open, ...patch });
+      const payload = {
+        ...open,
+        ...patch,
+        headline: cleanCopy(patch.headline ?? open.headline),
+        summary: cleanCopy(patch.summary ?? open.summary)
+      };
+      const saved = await saveItem(payload);
       setItems((list) => list.map((i) => (i.id === saved.id ? saved : i)));
       setOpen(saved);
       toast(saved.status === "approved" ? "Approved for Tunyafrika Updates." : "Saved.");
@@ -222,8 +229,8 @@ export default function ContentAdmin() {
           <div className="ws-row" key={item.id} style={{ cursor: "pointer" }} onClick={() => setOpen({ ...item })}>
             <div>
               <div className="ws-kicker">{item.status} · {item.sourceName || "Source"}</div>
-              <strong>{item.headline}</strong>
-              <p>{item.summary}</p>
+              <strong>{cleanCopy(item.headline)}</strong>
+              <p>{cleanCopy(item.summary)}</p>
             </div>
           </div>
         ))}

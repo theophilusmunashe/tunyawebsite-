@@ -57,12 +57,28 @@ export async function deleteItem(id) {
   return adminPost("delete_item", { id });
 }
 
+/** Strip leftover feed markup from headlines/summaries before display or share. */
+export function cleanCopy(text = "") {
+  return String(text || "")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;|&apos;/gi, "'")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/<[^>]*$/g, " ")
+    .replace(/https?:\/\/\S+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 export function captionFor(item) {
   const lines = [
     "Tunyafrika Updates",
     "",
-    item.headline || "",
-    item.summary || "",
+    cleanCopy(item.headline || ""),
+    cleanCopy(item.summary || ""),
     "",
     item.sourceName ? `Source: ${item.sourceName}` : null,
     item.sourceUrl || null,
