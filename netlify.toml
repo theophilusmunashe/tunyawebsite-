@@ -1,3 +1,10 @@
+# Keep /api/*.php out of the SPA fallback (PHP still only executes on cPanel).
+[[redirects]]
+  from = "/api/*"
+  to = "/api/:splat"
+  status = 200
+  force = false
+
 [[redirects]]
   from = "/*"
   to = "/index.html"

@@ -145,15 +145,50 @@ function parseRss(xml) {
   return items;
 }
 
-async function fetchText(url) {
-  const res = await fetch(url, {
-    headers: {
-      "User-Agent": "TunyafrikaContentBot/1.0 (+https://www.tunyafrika.com/content)",
-      Accept: "application/rss+xml, application/xml, text/xml, text/html;q=0.9, */*;q=0.8"
-    }
-  });
+async function fetchText(url, { asBrowser = false } = {}) {
+  const headers = asBrowser
+    ? {
+        "User-Agent":
+          "Mozilla/5.0 (compatible; TunyafrikaContentBot/1.1; +https://www.tunyafrika.com/content) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+        Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9"
+      }
+    : {
+        "User-Agent": "TunyafrikaContentBot/1.1 (+https://www.tunyafrika.com/content)",
+        Accept: "application/rss+xml, application/xml, text/xml, text/html;q=0.9, */*;q=0.8"
+      };
+  const res = await fetch(url, { headers, redirect: "follow" });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return res.text();
+}
+
+function metaContent(html, attr, value) {
+  const esc = value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const a = html.match(new RegExp(`<meta[^>]+${attr}=["']${esc}["'][^>]+content=["']([^"']+)["']`, "i"));
+  if (a) return stripText(a[1]);
+  const b = html.match(new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+${attr}=["']${esc}["']`, "i"));
+  return b ? stripText(b[1]) : "";
+}
+
+function jsonLdField(html, field) {
+  const blocks = html.match(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi) || [];
+  for (const block of blocks) {
+    const raw = (block.match(/>([\s\S]*?)<\/script>/i) || [])[1] || "";
+    let data;
+    try {
+      data = JSON.parse(raw.trim());
+    } catch {
+      continue;
+    }
+    const nodes = Array.isArray(data?.["@graph"]) ? data["@graph"] : [data];
+    for (const node of nodes) {
+      if (!node || typeof node !== "object") continue;
+      if (typeof node[field] === "string" && node[field]) return node[field];
+      if (field === "headline" && typeof node.name === "string" && node.name) return node.name;
+      if (field === "description" && typeof node.abstract === "string" && node.abstract) return node.abstract;
+    }
+  }
+  return "";
 }
 
 function publicItem(item) {
@@ -284,21 +319,27 @@ async function handle(req, res) {
         return true;
       }
       try {
-        const html = await fetchText(pageUrl);
-        const meta = (prop) => {
-          const a = html.match(new RegExp(`<meta[^>]+property=["']${prop}["'][^>]+content=["']([^"']+)["']`, "i"));
-          if (a) return stripText(a[1]);
-          const b = html.match(new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+property=["']${prop}["']`, "i"));
-          return b ? stripText(b[1]) : "";
-        };
-        let title = meta("og:title");
-        if (!title) title = stripText((html.match(/<title[^>]*>([\s\S]*?)<\/title>/i) || [])[1] || "");
-        let desc = meta("og:description");
-        if (!desc) {
-          const d = html.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']+)["']/i);
-          desc = d ? stripText(d[1]) : "";
+        let html = "";
+        try {
+          html = await fetchText(pageUrl, { asBrowser: true });
+        } catch {
+          html = await fetchText(pageUrl, { asBrowser: false });
         }
-        let site = meta("og:site_name");
+        let title =
+          metaContent(html, "property", "og:title") ||
+          metaContent(html, "name", "twitter:title") ||
+          metaContent(html, "name", "title") ||
+          metaContent(html, "itemprop", "headline") ||
+          stripText(jsonLdField(html, "headline")) ||
+          stripText((html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i) || [])[1] || "") ||
+          stripText((html.match(/<title[^>]*>([\s\S]*?)<\/title>/i) || [])[1] || "");
+        let desc =
+          metaContent(html, "property", "og:description") ||
+          metaContent(html, "name", "twitter:description") ||
+          metaContent(html, "name", "description") ||
+          metaContent(html, "itemprop", "description") ||
+          stripText(jsonLdField(html, "description"));
+        let site = metaContent(html, "property", "og:site_name");
         if (!site) {
           try { site = new URL(pageUrl).hostname.replace(/^www\./, ""); } catch { site = "Source"; }
         }

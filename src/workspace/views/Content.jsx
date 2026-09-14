@@ -6,8 +6,10 @@ import {
   deleteItem,
   fetchUpdates,
   importUrl,
+  isStaticPreviewHost,
   saveItem,
-  socialOpeners
+  socialOpeners,
+  usesRemoteContentApi
 } from "../../content-engine/api.js";
 import { canvasPreviewUrl, downloadUpdateCard } from "../../content-engine/brandCard.js";
 import { ITEM_STATUSES, formatWhen } from "../../content-engine/model.js";
@@ -193,6 +195,19 @@ export default function ContentAdmin() {
         <div className="ws-stat"><div className="ws-kicker">Posted</div><b>{counts.posted}</b></div>
         <div className="ws-stat"><div className="ws-kicker">Rejected</div><b>{counts.rejected}</b></div>
       </div>
+
+      {(isStaticPreviewHost() || usesRemoteContentApi()) && (
+        <div className="ws-panel paper" style={{ marginBottom: 18, borderColor: "#c4a35a" }}>
+          <div className="ws-kicker">Live API</div>
+          <p className="ws-lede" style={{ marginBottom: 0 }}>
+            This preview host cannot run PHP. Fetch/import calls go to{" "}
+            <a href="https://www.tunyafrika.com/admin/content" target="_blank" rel="noopener">
+              www.tunyafrika.com
+            </a>
+            . Prefer that URL for day-to-day admin work.
+          </p>
+        </div>
+      )}
 
       <div className="ws-panel paper" style={{ marginBottom: 18 }}>
         <div className="ws-kicker">Import one article</div>

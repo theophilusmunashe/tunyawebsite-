@@ -1,13 +1,66 @@
-const ENDPOINT = "/api/content.php";
+const RELATIVE_ENDPOINT = "/api/content.php";
+const LIVE_ENDPOINT = "https://www.tunyafrika.com/api/content.php";
+
+/** Hosts that can execute /api/content.php (cPanel PHP or local Vite plugin). */
+function canRunPhpApi(hostname = "") {
+  const host = String(hostname || "").toLowerCase();
+  if (!host || host === "localhost" || host === "127.0.0.1" || host.endsWith(".local")) return true;
+  if (host === "www.tunyafrika.com" || host === "tunyafrika.com") return true;
+  return false;
+}
+
+/** Static preview hosts (Vercel/Netlify) serve .php as files — POST returns 405. */
+export function isStaticPreviewHost(hostname = typeof window !== "undefined" ? window.location.hostname : "") {
+  const host = String(hostname || "").toLowerCase();
+  if (!host) return false;
+  return (
+    host.endsWith(".vercel.app") ||
+    host.endsWith(".netlify.app") ||
+    host.endsWith(".netlify.com") ||
+    host.includes("vercel") ||
+    host.includes("netlify")
+  );
+}
+
+/**
+ * Prefer relative /api on the live site and local Vite.
+ * On Vercel/Netlify (and other static hosts), call the live cPanel API so admin
+ * actions do not hit HTTP 405 from a non-executing PHP file.
+ */
+export function contentEndpoint() {
+  const override = import.meta.env.VITE_CONTENT_API_URL;
+  if (override) return String(override).replace(/\/$/, "");
+  if (typeof window === "undefined") return RELATIVE_ENDPOINT;
+  const host = window.location.hostname;
+  if (canRunPhpApi(host)) return RELATIVE_ENDPOINT;
+  if (isStaticPreviewHost(host)) return LIVE_ENDPOINT;
+  // Unknown deploy target: try live API so POST is not stuck on static 405.
+  return LIVE_ENDPOINT;
+}
+
+export function usesRemoteContentApi() {
+  return contentEndpoint() === LIVE_ENDPOINT || Boolean(import.meta.env.VITE_CONTENT_API_URL);
+}
 
 function workspaceKey() {
   return import.meta.env.VITE_MAIL_KEY || import.meta.env.VITE_WORKSPACE_KEY || "123456";
 }
 
+function httpErrorMessage(status, data = {}) {
+  if (data.error) return data.error;
+  if (status === 405) {
+    return "Content API returned HTTP 405. Use https://www.tunyafrika.com/admin — Vercel/static hosts cannot run the PHP content engine.";
+  }
+  if (status === 0 || status === 404) {
+    return `Request failed (${status}). Open the admin on https://www.tunyafrika.com/admin.`;
+  }
+  return `Request failed (${status})`;
+}
+
 async function parse(res) {
   const data = await res.json().catch(() => ({}));
   if (!res.ok || data.ok !== true) {
-    const err = new Error(data.error || `Request failed (${res.status})`);
+    const err = new Error(httpErrorMessage(res.status, data));
     err.status = res.status;
     err.data = data;
     throw err;
@@ -17,20 +70,32 @@ async function parse(res) {
 
 async function adminPost(action, payload = {}) {
   const key = workspaceKey();
-  const res = await fetch(ENDPOINT, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-      "X-Tunya-Key": key
-    },
-    body: JSON.stringify({ action, key, ...payload })
-  });
+  const body = JSON.stringify({ action, key, ...payload });
+  const headers = {
+    "Content-Type": "application/json",
+    Accept: "application/json",
+    "X-Tunya-Key": key
+  };
+  let endpoint = contentEndpoint();
+  let res = await fetch(endpoint, { method: "POST", headers, body });
+  // If a static host still served /api/*.php, retry against live cPanel.
+  if (res.status === 405 && endpoint !== LIVE_ENDPOINT) {
+    endpoint = LIVE_ENDPOINT;
+    res = await fetch(endpoint, { method: "POST", headers, body });
+  }
   return parse(res);
 }
 
 export async function publicUpdates() {
-  const res = await fetch(`${ENDPOINT}?action=public_list`, { headers: { Accept: "application/json" } });
+  let endpoint = contentEndpoint();
+  let res = await fetch(`${endpoint}?action=public_list`, {
+    headers: { Accept: "application/json" }
+  });
+  if ((res.status === 405 || res.status === 404) && endpoint !== LIVE_ENDPOINT) {
+    res = await fetch(`${LIVE_ENDPOINT}?action=public_list`, {
+      headers: { Accept: "application/json" }
+    });
+  }
   const data = await parse(res);
   return data.items || [];
 }
