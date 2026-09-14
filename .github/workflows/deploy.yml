@@ -32,10 +32,9 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./dist/ # Change to ./build/ if using Create React App
           server-dir: ./
-          # Keep live accommodation photos + store across deploys
+          # Do not wipe the server. Scaffold folders (with .gitkeep/.htaccess) upload
+          # normally so FTP can create them; only skip runtime data written on the server.
+          dangerous-clean-slate: false
           exclude: |
-            **/accomodations-media/**
-            !**/accomodations-media/.gitkeep
-            !**/accomodations-media/.htaccess
             **/accomodations-data/store.json
             **/accomodations-data/*.tmp
