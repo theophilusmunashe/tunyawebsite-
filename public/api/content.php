@@ -106,15 +106,28 @@ function public_item($item) {
   ];
 }
 
-function http_get($url) {
+function http_get($url, $asBrowser = false) {
+  $ua = $asBrowser
+    ? "Mozilla/5.0 (compatible; TunyafrikaContentBot/1.1; +https://www.tunyafrika.com/content) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
+    : "TunyafrikaContentBot/1.1 (+https://www.tunyafrika.com/content)";
+  $accept = $asBrowser
+    ? "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+    : "application/rss+xml, application/xml, text/xml, text/html;q=0.9, */*;q=0.8";
   if (function_exists("curl_init")) {
     $ch = curl_init($url);
     curl_setopt_array($ch, [
       CURLOPT_RETURNTRANSFER => true,
       CURLOPT_FOLLOWLOCATION => true,
-      CURLOPT_TIMEOUT => 20,
-      CURLOPT_USERAGENT => "TunyafrikaContentBot/1.0 (+https://www.tunyafrika.com/content)",
-      CURLOPT_HTTPHEADER => ["Accept: application/rss+xml, application/xml, text/xml, text/html;q=0.9, */*;q=0.8"]
+      CURLOPT_MAXREDIRS => 8,
+      CURLOPT_TIMEOUT => 25,
+      CURLOPT_CONNECTTIMEOUT => 12,
+      CURLOPT_ENCODING => "",
+      CURLOPT_USERAGENT => $ua,
+      CURLOPT_HTTPHEADER => [
+        "Accept: " . $accept,
+        "Accept-Language: en-US,en;q=0.9",
+        "Cache-Control: no-cache"
+      ]
     ]);
     $body = curl_exec($ch);
     $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -124,8 +137,9 @@ function http_get($url) {
   }
   $ctx = stream_context_create([
     "http" => [
-      "timeout" => 20,
-      "header" => "User-Agent: TunyafrikaContentBot/1.0\r\nAccept: application/rss+xml, application/xml, text/xml, text/html\r\n"
+      "timeout" => 25,
+      "follow_location" => 1,
+      "header" => "User-Agent: {$ua}\r\nAccept: {$accept}\r\nAccept-Language: en-US,en;q=0.9\r\n"
     ]
   ]);
   $body = @file_get_contents($url, false, $ctx);
@@ -266,30 +280,64 @@ function default_sources() {
   ];
 }
 
-function fetch_og($url) {
-  $html = http_get($url);
-  if (!$html) return null;
-  $get = function ($prop) use ($html) {
-    if (preg_match('/<meta[^>]+property=["\']' . preg_quote($prop, '/') . '["\'][^>]+content=["\']([^"\']+)["\']/i', $html, $m)) return html_entity_decode($m[1], ENT_QUOTES | ENT_HTML5, "UTF-8");
-    if (preg_match('/<meta[^>]+content=["\']([^"\']+)["\'][^>]+property=["\']' . preg_quote($prop, '/') . '["\']/i', $html, $m)) return html_entity_decode($m[1], ENT_QUOTES | ENT_HTML5, "UTF-8");
-    return "";
-  };
-  $title = $get("og:title");
-  if ($title === "" && preg_match('/<title[^>]*>(.*?)<\/title>/is', $html, $m)) $title = strip_text($m[1]);
-  $desc = $get("og:description");
-  if ($desc === "" && preg_match('/<meta[^>]+name=["\']description["\'][^>]+content=["\']([^"\']+)["\']/i', $html, $m)) {
-    $desc = html_entity_decode($m[1], ENT_QUOTES | ENT_HTML5, "UTF-8");
+function meta_content($html, $attr, $value) {
+  $q = preg_quote($value, "/");
+  if (preg_match('/<meta[^>]+' . $attr . '=["\']' . $q . '["\'][^>]+content=["\']([^"\']+)["\']/i', $html, $m)) {
+    return html_entity_decode($m[1], ENT_QUOTES | ENT_HTML5, "UTF-8");
   }
-  $site = $get("og:site_name");
+  if (preg_match('/<meta[^>]+content=["\']([^"\']+)["\'][^>]+' . $attr . '=["\']' . $q . '["\']/i', $html, $m)) {
+    return html_entity_decode($m[1], ENT_QUOTES | ENT_HTML5, "UTF-8");
+  }
+  return "";
+}
+
+function json_ld_field($html, $field) {
+  if (!preg_match_all('/<script[^>]+type=["\']application\/ld\+json["\'][^>]*>([\s\S]*?)<\/script>/i', $html, $blocks)) {
+    return "";
+  }
+  foreach ($blocks[1] as $raw) {
+    $data = json_decode(trim($raw), true);
+    if (!$data) continue;
+    $nodes = isset($data["@graph"]) && is_array($data["@graph"]) ? $data["@graph"] : [$data];
+    foreach ($nodes as $node) {
+      if (!is_array($node)) continue;
+      if (!empty($node[$field]) && is_string($node[$field])) return $node[$field];
+      if ($field === "headline" && !empty($node["name"]) && is_string($node["name"])) return $node["name"];
+      if ($field === "description" && !empty($node["abstract"]) && is_string($node["abstract"])) return $node["abstract"];
+    }
+  }
+  return "";
+}
+
+function fetch_og($url) {
+  $html = http_get($url, true);
+  if (!$html) $html = http_get($url, false);
+  if (!$html) return null;
+
+  $title = meta_content($html, "property", "og:title");
+  if ($title === "") $title = meta_content($html, "name", "twitter:title");
+  if ($title === "") $title = meta_content($html, "name", "title");
+  if ($title === "") $title = meta_content($html, "itemprop", "headline");
+  if ($title === "") $title = strip_text(json_ld_field($html, "headline"));
+  if ($title === "" && preg_match('/<h1[^>]*>([\s\S]*?)<\/h1>/i', $html, $m)) $title = strip_text($m[1]);
+  if ($title === "" && preg_match('/<title[^>]*>(.*?)<\/title>/is', $html, $m)) $title = strip_text($m[1]);
+
+  $desc = meta_content($html, "property", "og:description");
+  if ($desc === "") $desc = meta_content($html, "name", "twitter:description");
+  if ($desc === "") $desc = meta_content($html, "name", "description");
+  if ($desc === "") $desc = meta_content($html, "itemprop", "description");
+  if ($desc === "") $desc = strip_text(json_ld_field($html, "description"));
+
+  $site = meta_content($html, "property", "og:site_name");
   if ($site === "") {
     $host = parse_url($url, PHP_URL_HOST);
     $site = $host ? preg_replace('/^www\./', '', $host) : "Source";
   }
   if (trim($title) === "") return null;
   return [
-    "headline" => shorten($title, 140),
-    "summary" => shorten($desc !== "" ? $desc : $title, 220),
-    "sourceName" => $site,
+    "headline" => shorten(strip_text($title), 140),
+    "summary" => shorten(strip_text($desc !== "" ? $desc : $title), 220),
+    "sourceName" => strip_text($site) ?: $site,
     "sourceUrl" => $url,
     "publishedAt" => (int)(microtime(true) * 1000)
   ];
