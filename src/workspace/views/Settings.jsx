@@ -3,7 +3,7 @@ import { useWorkspace } from "../store.jsx";
 import { Button, Field, PageHead } from "../ui.jsx";
 
 export default function Settings() {
-  const { settings, updateSettings, backup, restore, toast } = useWorkspace();
+  const { settings, updateSettings, backup, restore, toast, sync } = useWorkspace();
   const fileRef = useRef(null);
   const set = (patch) => updateSettings(patch);
 
@@ -32,6 +32,18 @@ export default function Settings() {
           <Field label="Account"><input value={settings.bankAccount || ""} onChange={(e) => set({ bankAccount: e.target.value })} /></Field>
           <Field label="Branch / SWIFT"><input value={settings.bankBranch || ""} onChange={(e) => set({ bankBranch: e.target.value })} /></Field>
         </div>
+      </div>
+
+      <div className="ws-panel" style={{ marginTop: 16 }}>
+        <div className="ws-kicker">Shared workspace</div>
+        <p className="ws-lede">
+          Quotes, invoices, cash book, loans, bookings, and files now live on tunyafrika.com,
+          so every computer that signs in sees the same records.
+          {sync?.status === "ok" && sync.at ? ` Last synced ${new Date(sync.at).toLocaleString()}.` : ""}
+          {sync?.status === "offline" ? " This computer is working offline until the site can be reached." : ""}
+          {sync?.status === "syncing" ? " Syncing…" : ""}
+        </p>
+        <p className="ws-lede" style={{ marginTop: 8 }}>Export is still here as a spare copy. Files over 6 MB stay on the computer that uploaded them.</p>
       </div>
 
       <div className="ws-panel" style={{ marginTop: 16 }}>

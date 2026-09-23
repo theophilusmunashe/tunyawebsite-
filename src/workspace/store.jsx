@@ -1,4 +1,5 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { CLOUD_FILE_MAX, mergeWorkspacePacks, packHasRecords, pullWorkspace, pushWorkspace, slimPackForCloud } from "./lib/cloud.js";
 import { exportBackup, fileDelete, fileGet, fileListMeta, filePut, importBackup, kvGet, kvSet } from "./lib/db.js";
 import { uid } from "./lib/ids.js";
 import { seedIfEmpty, DEFAULT_CREW, DEFAULT_SETTINGS } from "./data/seed.js";
@@ -36,6 +37,10 @@ export function WorkspaceProvider({ children }) {
   const [data, setData] = useState({ settings: {}, files: [] });
   const [session, setSession] = useState(readSession);
   const [toasts, setToasts] = useState([]);
+  const [sync, setSync] = useState({ status: "idle", at: 0, error: "" });
+  const cloudLock = useRef(Promise.resolve());
+  const warnedOffline = useRef(false);
+  const flushTimer = useRef(null);
 
   const toast = useCallback((message) => {
     const id = uid("toast");
@@ -43,22 +48,101 @@ export function WorkspaceProvider({ children }) {
     setTimeout(() => setToasts((list) => list.filter((t) => t.id !== id)), 4200);
   }, []);
 
+  const hydrate = useCallback(async () => {
+    const next = {
+      settings: (await kvGet("settings")) || { ...DEFAULT_SETTINGS },
+      _tombstones: (await kvGet("_tombstones")) || {}
+    };
+    for (const key of LISTS) next[key] = (await kvGet(key)) || [];
+    if (!next.crew?.length) next.crew = DEFAULT_CREW;
+    next.files = await fileListMeta();
+    setData(next);
+    setSession((current) => {
+      if (!current?.crewId) return current;
+      const stillThere = (next.crew || []).some((c) => c.id === current.crewId);
+      if (stillThere) return current;
+      sessionStorage.removeItem("tunya-desk");
+      localStorage.removeItem("tunya-desk");
+      return null;
+    });
+    return next;
+  }, []);
+
+  const runCloud = useCallback((fn) => {
+    const next = cloudLock.current.then(fn, fn);
+    cloudLock.current = next.catch(() => {});
+    return next;
+  }, []);
+
+  const applyCloudPack = useCallback(async (pack) => {
+    await importBackup(pack, { keepLocalFilesOver: CLOUD_FILE_MAX });
+  }, []);
+
+  const flushCloud = useCallback(async ({ pullFirst = true } = {}) => {
+    return runCloud(async () => {
+      setSync((s) => ({ ...s, status: "syncing", error: "" }));
+      try {
+        const local = await exportBackup({ maxFileBytes: CLOUD_FILE_MAX });
+        let pack = slimPackForCloud(local);
+        if (pullFirst) {
+          const remote = await pullWorkspace();
+          if (packHasRecords(remote.pack) || packHasRecords(local)) {
+            pack = slimPackForCloud(mergeWorkspacePacks(local, remote.pack));
+            await applyCloudPack(pack);
+          }
+        }
+        if (packHasRecords(pack)) {
+          await pushWorkspace(pack);
+        }
+        warnedOffline.current = false;
+        setSync({ status: "ok", at: Date.now(), error: "" });
+        return pack;
+      } catch (err) {
+        const message = err?.message || "Could not sync the shared workspace.";
+        setSync({ status: "offline", at: Date.now(), error: message });
+        if (!warnedOffline.current) {
+          warnedOffline.current = true;
+          toast("Saved on this computer. Could not sync to the shared workspace yet.");
+        }
+        throw err;
+      }
+    });
+  }, [applyCloudPack, runCloud, toast]);
+
   const load = useCallback(async () => {
     try {
-      await seedIfEmpty();
-      const next = { settings: (await kvGet("settings")) || { ...DEFAULT_SETTINGS } };
-      for (const key of LISTS) next[key] = (await kvGet(key)) || [];
-      if (!next.crew?.length) next.crew = DEFAULT_CREW;
-      next.files = await fileListMeta();
-      setData(next);
-      setSession((current) => {
-        if (!current?.crewId) return current;
-        const stillThere = (next.crew || []).some((c) => c.id === current.crewId);
-        if (stillThere) return current;
-        sessionStorage.removeItem("tunya-desk");
-        localStorage.removeItem("tunya-desk");
-        return null;
-      });
+      let usedCloud = false;
+      try {
+        const remote = await pullWorkspace();
+        if (packHasRecords(remote.pack)) {
+          const local = await exportBackup({ maxFileBytes: CLOUD_FILE_MAX });
+          const merged = slimPackForCloud(mergeWorkspacePacks(local, remote.pack));
+          await applyCloudPack(merged);
+          usedCloud = true;
+          if (packHasRecords(local)) {
+            await runCloud(async () => {
+              await pushWorkspace(merged);
+            });
+          }
+          setSync({ status: "ok", at: Date.now(), error: "" });
+        }
+      } catch (err) {
+        console.warn("Workspace cloud pull failed.", err);
+        setSync({ status: "offline", at: Date.now(), error: err?.message || "Offline" });
+      }
+      if (!usedCloud) {
+        await seedIfEmpty();
+        try {
+          const local = await exportBackup({ maxFileBytes: CLOUD_FILE_MAX });
+          if (packHasRecords(local)) {
+            await pushWorkspace(slimPackForCloud(local));
+            setSync({ status: "ok", at: Date.now(), error: "" });
+          }
+        } catch (err) {
+          console.warn("Workspace cloud push failed.", err);
+        }
+      }
+      await hydrate();
     } catch (err) {
       console.warn("Workspace storage unavailable — session only.", err);
       setData({
@@ -74,12 +158,13 @@ export function WorkspaceProvider({ children }) {
         visaCases: [],
         briefs: [],
         notices: [],
-        files: []
+        files: [],
+        _tombstones: {}
       });
     } finally {
       setReady(true);
     }
-  }, []);
+  }, [applyCloudPack, hydrate, runCloud]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -89,11 +174,24 @@ export function WorkspaceProvider({ children }) {
     return () => ch.close();
   }, [load]);
 
+  useEffect(() => {
+    const onVis = () => {
+      if (document.visibilityState === "visible") load();
+    };
+    document.addEventListener("visibilitychange", onVis);
+    return () => document.removeEventListener("visibilitychange", onVis);
+  }, [load]);
+
   const persist = useCallback(async (key, value) => {
-    await kvSet(key, value);
-    setData((d) => ({ ...d, [key]: value }));
+    const next = key === "settings" ? { ...value, updatedAt: Date.now() } : value;
+    await kvSet(key, next);
+    setData((d) => ({ ...d, [key]: next }));
     ping();
-  }, []);
+    clearTimeout(flushTimer.current);
+    flushTimer.current = setTimeout(() => {
+      flushCloud().then(() => hydrate()).catch(() => {});
+    }, 800);
+  }, [flushCloud, hydrate]);
 
   const updateSettings = useCallback(async (patch) => {
     const next = { ...data.settings, ...patch };
@@ -111,11 +209,24 @@ export function WorkspaceProvider({ children }) {
     const next = list.some((row) => row.id === record.id)
       ? list.map((row) => (row.id === record.id ? saved : row))
       : [saved, ...list];
+    const tombs = { ...(data._tombstones || {}) };
+    if (tombs[key]?.[id]) {
+      const nextTombs = { ...tombs, [key]: { ...tombs[key] } };
+      delete nextTombs[key][id];
+      await kvSet("_tombstones", nextTombs);
+      setData((d) => ({ ...d, _tombstones: nextTombs }));
+    }
     await persist(key, next);
     return saved;
   }, [data, persist]);
 
   const remove = useCallback(async (key, id) => {
+    const tombs = {
+      ...(data._tombstones || {}),
+      [key]: { ...((data._tombstones || {})[key] || {}), [id]: Date.now() }
+    };
+    await kvSet("_tombstones", tombs);
+    setData((d) => ({ ...d, _tombstones: tombs }));
     await persist(key, (data[key] || []).filter((row) => row.id !== id));
   }, [data, persist]);
 
@@ -133,14 +244,21 @@ export function WorkspaceProvider({ children }) {
     await filePut(record);
     setData((d) => ({ ...d, files: [{ ...record, blob: undefined }, ...d.files] }));
     ping();
+    flushCloud().then(() => hydrate()).catch(() => {});
     return record.id;
-  }, []);
+  }, [flushCloud, hydrate]);
 
   const deleteFile = useCallback(async (id) => {
+    const tombs = {
+      ...(data._tombstones || {}),
+      files: { ...((data._tombstones || {}).files || {}), [id]: Date.now() }
+    };
+    await kvSet("_tombstones", tombs);
     await fileDelete(id);
-    setData((d) => ({ ...d, files: d.files.filter((f) => f.id !== id) }));
+    setData((d) => ({ ...d, files: d.files.filter((f) => f.id !== id), _tombstones: tombs }));
     ping();
-  }, []);
+    flushCloud().then(() => hydrate()).catch(() => {});
+  }, [data._tombstones, flushCloud, hydrate]);
 
   const downloadFile = useCallback(async (id) => {
     const rec = await fileGet(id);
@@ -187,9 +305,10 @@ export function WorkspaceProvider({ children }) {
   const restore = useCallback(async (file) => {
     const pack = JSON.parse(await file.text());
     await importBackup(pack);
-    await load();
-    toast("Backup restored.");
-  }, [load, toast]);
+    await flushCloud({ pullFirst: false }).catch(() => {});
+    await hydrate();
+    toast("Backup restored and shared.");
+  }, [flushCloud, hydrate, toast]);
 
   const you = useMemo(
     () => (data.crew || []).find((c) => c.id === session?.crewId) || session,
@@ -203,6 +322,7 @@ export function WorkspaceProvider({ children }) {
     session,
     toasts,
     toast,
+    sync,
     signIn,
     signOut,
     upsert,

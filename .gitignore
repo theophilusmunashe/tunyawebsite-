@@ -24,3 +24,7 @@ public/api/content-data/*.tmp
 
 # Local booking-request log written by the Vite plugin
 public/api/book-requests.json
+
+# Shared workspace runtime data (generated on the server / local Vite API)
+public/api/workspace-data/store.json
+public/api/workspace-data/*.tmp

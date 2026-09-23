@@ -97,19 +97,23 @@ export function fileListMeta() {
   );
 }
 
-export async function exportBackup() {
-  const keys = ["seeded", "settings", "crew", "tasks", "quotes", "invoices", "cashbook", "loans", "journeys", "movements", "visaCases", "briefs", "notices"];
+export async function exportBackup(options = {}) {
+  const maxFileBytes = options.maxFileBytes ?? Infinity;
+  const keys = ["seeded", "settings", "crew", "tasks", "quotes", "invoices", "cashbook", "loans", "journeys", "movements", "visaCases", "briefs", "notices", "_tombstones"];
   const kv = {};
   for (const key of keys) kv[key] = await kvGet(key);
   const files = await tx("files", "readonly", (s) => s.getAll());
-  const packedFiles = await Promise.all((files || []).map(async (f) => {
+  const packedFiles = [];
+  for (const f of files || []) {
+    if ((f.size || f.blob?.size || 0) > maxFileBytes) continue;
+    if (!f.blob) continue;
     const buf = await f.blob.arrayBuffer();
-    return {
+    packedFiles.push({
       ...f,
       blob: undefined,
       dataUrl: await blobToDataUrl(new Blob([buf], { type: f.mime }))
-    };
-  }));
+    });
+  }
   return {
     kind: "tunyafrika-workspace",
     version: 1,
@@ -119,14 +123,22 @@ export async function exportBackup() {
   };
 }
 
-export async function importBackup(pack) {
+export async function importBackup(pack, options = {}) {
   if (!pack || pack.kind !== "tunyafrika-workspace") throw new Error("This is not a Tunyafrika workspace pack.");
   for (const [key, value] of Object.entries(pack.kv || {})) {
     await kvSet(key, value);
   }
+  const incoming = pack.files || [];
+  const incomingIds = new Set(incoming.map((f) => f.id).filter(Boolean));
   const existing = await tx("files", "readonly", (s) => s.getAll());
-  for (const f of existing || []) await fileDelete(f.id);
-  for (const f of pack.files || []) {
+  const keepLocalOver = options.keepLocalFilesOver || 0;
+  for (const f of existing || []) {
+    if (incomingIds.has(f.id)) continue;
+    if (keepLocalOver && (f.size || 0) > keepLocalOver) continue;
+    await fileDelete(f.id);
+  }
+  for (const f of incoming) {
+    if (!f.dataUrl) continue;
     const blob = dataUrlToBlob(f.dataUrl, f.mime);
     await filePut({ ...f, dataUrl: undefined, blob });
   }

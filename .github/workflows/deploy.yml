@@ -40,3 +40,5 @@ jobs:
             **/accomodations-data/*.tmp
             **/content-data/store.json
             **/content-data/*.tmp
+            **/workspace-data/store.json
+            **/workspace-data/*.tmp
