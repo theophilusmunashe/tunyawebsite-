@@ -103,7 +103,9 @@ export default function Header({ go, page }) {
           </span>
         </div>
 
-        <div className="site-header-side site-header-side-end" aria-hidden="true" />
+        <div className="site-header-side site-header-side-end">
+          <a className="x12 site-header-cta" href={nav.cta.href} target="_blank" rel="noopener">{nav.cta.label}</a>
+        </div>
       </div>
 
       {navOpen && (

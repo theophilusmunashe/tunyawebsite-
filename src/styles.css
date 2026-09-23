@@ -42,7 +42,7 @@ input, textarea, button { font-family: "Poppins", sans-serif; }
 .site-header-side {
   display: flex;
   align-items: center;
-  min-width: 44px;
+  min-width: 196px;
 }
 .site-header-side-end {
   justify-content: flex-end;
@@ -53,21 +53,35 @@ input, textarea, button { font-family: "Poppins", sans-serif; }
   align-items: center;
   justify-content: center;
 }
+.site-header-cta {
+  background: #b3955c;
+  color: #04301f;
+  padding: 13px 24px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+}
+/* logo-cream.png is 500x500 with the wordmark in a 448x171 box. These frames
+   crop only the empty padding so tunya + afrika stay fully visible. */
 .site-logo-frame {
   display: block;
   position: relative;
-  width: 176px;
-  height: 70px;
+  width: 194px;
+  height: 74px;
   overflow: hidden;
 }
 .site-logo-frame .site-logo {
   position: absolute;
   display: block;
-  width: 180px;
+  width: 216px;
   height: auto;
+  max-width: none;
   margin: 0;
-  left: -2px;
-  top: -40px;
+  left: -10px;
+  top: -64px;
 }
 
 .x1:hover {
@@ -260,21 +274,24 @@ input, textarea, button { font-family: "Poppins", sans-serif; }
     max-height: calc(100dvh - 72px - env(safe-area-inset-top, 0px));
     padding: 12px 16px 32px;
   }
+  .site-header-side {
+    min-width: 168px;
+  }
   .site-logo-frame {
     display: block;
     position: relative;
-    width: 137px;
-    height: 58px;
+    width: 157px;
+    height: 60px;
     overflow: hidden;
     flex-shrink: 0;
   }
   .site-logo-frame .site-logo {
     position: absolute;
     display: block;
-    width: 140px !important;
+    width: 175px !important;
     margin: 0 !important;
-    left: -2px;
-    top: -35px;
+    left: -8px;
+    top: -52px;
   }
 
   .site-footer-logo-frame {
@@ -538,14 +555,20 @@ input, textarea, button { font-family: "Poppins", sans-serif; }
     padding-bottom: 28px !important;
     gap: 36px !important;
   }
+  .site-header-side {
+    min-width: 44px;
+  }
+  .site-header-cta {
+    display: none;
+  }
   .site-logo-frame {
-    width: 117px;
-    height: 50px;
+    width: 126px;
+    height: 48px;
   }
   .site-logo-frame .site-logo {
-    width: 118px !important;
-    left: -1px;
-    top: -29px;
+    width: 140px !important;
+    left: -6px;
+    top: -41px;
   }
 
   .site-footer-logo-frame {
