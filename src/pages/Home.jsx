@@ -14,15 +14,13 @@ export default function Home({ go }) {
           <div style={{position: "relative", height: "92vh", minHeight: "700px", background: "#04301f", overflow: "hidden"}}>
             <img src={imageSrc(hero.image)} alt={hero.imageAlt} style={coverStyle} />
             <div style={{position: "absolute", inset: "0", background: "linear-gradient(180deg, rgba(4,48,31,0.55) 0%, rgba(4,48,31,0.1) 35%, rgba(4,48,31,0.82) 78%, rgba(4,48,31,0.96) 100%)"}}></div>
-            <div style={{position: "absolute", inset: "0", display: "flex", flexDirection: "column", justifyContent: "flex-end", padding: "0 0 100px", maxWidth: "1400px", margin: "0 auto", left: "0", right: "0"}}>
-              <div style={{padding: "0 48px"}}>
-                <div style={{fontSize: "13px", fontWeight: "500", letterSpacing: "0.42em", textTransform: "uppercase", color: "#b3955c"}}>{hero.kicker}</div>
-                <h1 style={{fontFamily: "'Cormorant Garamond', serif", fontWeight: "500", fontSize: "92px", lineHeight: "1.02", color: "#faf3e8", margin: "20px 0 0", maxWidth: "15ch", textWrap: "pretty"}}>{hero.titleLead}<em style={{color: "#b3955c"}}>{hero.titleAccent}</em></h1>
-                <p style={{margin: "26px 0 0", maxWidth: "58ch", fontWeight: "300", fontSize: "19px", lineHeight: "1.85", color: "rgba(250,243,232,0.9)"}}>{hero.body}</p>
-                <div className="stack-m" style={{display: "flex", alignItems: "center", gap: "18px", marginTop: "38px"}}>
-                  <a className="x12" href={hero.primaryCta.href} target="_blank" rel="noopener" style={{background: "#b3955c", color: "#04301f", padding: "18px 34px", fontSize: "13px", fontWeight: "600", letterSpacing: "0.2em", textTransform: "uppercase", textDecoration: "none"}}>{hero.primaryCta.label}</a>
-                  <div className="x2" onClick={() => go(hero.secondaryCta.page)} style={{cursor: "pointer", border: "1px solid rgba(250,243,232,0.5)", color: "#faf3e8", padding: "18px 34px", fontSize: "13px", fontWeight: "500", letterSpacing: "0.2em", textTransform: "uppercase"}}>{hero.secondaryCta.label}</div>
-                </div>
+            <div className="site-hero-copy">
+              <div style={{fontSize: "13px", fontWeight: "500", letterSpacing: "0.42em", textTransform: "uppercase", color: "#b3955c"}}>{hero.kicker}</div>
+              <h1 style={{fontFamily: "'Cormorant Garamond', serif", fontWeight: "500", fontSize: "92px", lineHeight: "1.02", color: "#faf3e8", margin: "20px auto 0", maxWidth: "15ch", textWrap: "pretty"}}>{hero.titleLead}<em style={{color: "#b3955c"}}>{hero.titleAccent}</em></h1>
+              <p style={{margin: "26px auto 0", maxWidth: "58ch", fontWeight: "300", fontSize: "19px", lineHeight: "1.85", color: "rgba(250,243,232,0.9)"}}>{hero.body}</p>
+              <div className="stack-m site-hero-actions">
+                <a className="x12" href={hero.primaryCta.href} target="_blank" rel="noopener" style={{background: "#b3955c", color: "#04301f", padding: "18px 34px", fontSize: "13px", fontWeight: "600", letterSpacing: "0.2em", textTransform: "uppercase", textDecoration: "none"}}>{hero.primaryCta.label}</a>
+                <div className="x2" onClick={() => go(hero.secondaryCta.page)} style={{cursor: "pointer", border: "1px solid rgba(250,243,232,0.5)", color: "#faf3e8", padding: "18px 34px", fontSize: "13px", fontWeight: "500", letterSpacing: "0.2em", textTransform: "uppercase"}}>{hero.secondaryCta.label}</div>
               </div>
             </div>
           </div>
