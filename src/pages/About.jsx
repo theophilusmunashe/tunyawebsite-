@@ -29,6 +29,19 @@ export default function About({ go }) {
               ))}
             </div>
           </div>
+
+          {who.photos?.length > 0 && (
+            <div className="who-photos" style={{maxWidth: "1400px", margin: "0 auto", padding: "56px 48px 0", display: "grid", gridTemplateColumns: "1.15fr 0.85fr 0.85fr", gap: "18px"}}>
+              {who.photos.map((photo) => (
+                <img
+                  key={photo.image}
+                  src={imageSrc(photo.image)}
+                  alt={photo.imageAlt}
+                  style={{width: "100%", height: "460px", objectFit: "cover", objectPosition: photo.position || "center", display: "block"}}
+                />
+              ))}
+            </div>
+          )}
     
           <div style={{maxWidth: "1400px", margin: "0 auto", padding: "80px 48px 0"}}>
             <div style={kickerStyle}>{mandate.kicker}</div>

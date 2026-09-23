@@ -13,6 +13,11 @@ export const about = {
     paragraphs: [
       "Tunyafrika Xperiences was founded on a simple frustration: the world's most extraordinary waterfall was being sold to visitors by people who had never stood in its spray. We thought the story deserved to be told by the people who grew up in it.",
       "Today we plan, book and personally look after journeys that begin at Mosi-oa-Tunya and reach across the continent — and we built Tunya, Africa's first conversational travel assistant, so that anyone, anywhere, can reach us in a sentence."
+    ],
+    photos: [
+      { image: "/assets/about-dzika-arrivals.jpg", imageAlt: "Meeting guests at Victoria Falls International Airport", position: "center 35%" },
+      { image: "/assets/about-crew-walk.jpg", imageAlt: "Tunyafrika on the ground in Victoria Falls", position: "center 78%" },
+      { image: "/assets/about-dzika-walk.jpg", imageAlt: "Dzika in Victoria Falls", position: "center 40%" }
     ]
   },
   mandate: {

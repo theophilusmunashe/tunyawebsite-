@@ -7,7 +7,7 @@ const coverStyle = {position: "absolute", inset: "0", width: "100%", height: "10
 
 export default function Home({ go }) {
   const { home } = useContent();
-  const { hero, way, days, tunya, beyondTeaser } = home;
+  const { hero, way, days, tunya, beyondTeaser, meetDzika } = home;
 
   return (
     <div data-screen-label="Home">
@@ -25,25 +25,52 @@ export default function Home({ go }) {
             </div>
           </div>
     
-          <div style={{maxWidth: "1400px", margin: "0 auto", padding: "110px 48px 0", display: "grid", gridTemplateColumns: "1fr 1.1fr", gap: "90px", alignItems: "start"}}>
-            <div>
-              <div style={kickerStyle}>{way.kicker}</div>
-              <h2 style={headingStyle}>{way.titleLead}<em style={{color: "#b3955c"}}>{way.titleAccent}</em></h2>
-            </div>
-            <div>
-              {way.paragraphs.map((text, i) => (
-                <p key={i} style={{margin: i === 0 ? "0" : "20px 0 0", fontWeight: "300", fontSize: "19px", lineHeight: "1.9"}}>{text}</p>
-              ))}
-              <div className="stats-grid" style={{display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "28px", marginTop: "46px"}}>
-                {way.stats.map((stat) => (
-                  <div key={stat.label} style={{borderTop: "1px solid #b3955c", paddingTop: "16px"}}>
-                    <div style={{fontFamily: "'Cormorant Garamond', serif", fontSize: "40px", color: "#04301f"}}>{stat.value}</div>
-                    <div style={{fontSize: "13px", fontWeight: "300", lineHeight: "1.7", color: "rgba(13,43,30,0.72)", marginTop: "4px"}}>{stat.label}</div>
-                  </div>
+          <div className="way-section">
+            <div className="way-spread">
+              <div className="way-portrait">
+                <img src={imageSrc(way.image)} alt={way.imageAlt} />
+                <div className="deco-frame" />
+                <div className="way-caption">
+                  <div className="way-caption-kicker">{way.captionKicker}</div>
+                  <p>{way.caption}</p>
+                </div>
+              </div>
+              <div className="way-copy">
+                <div style={kickerStyle}>{way.kicker}</div>
+                <h2 style={headingStyle}>{way.titleLead}<em style={{color: "#b3955c"}}>{way.titleAccent}</em></h2>
+                {way.paragraphs.map((text, i) => (
+                  <p key={i} style={{margin: i === 0 ? "26px 0 0" : "20px 0 0", fontWeight: "300", fontSize: "19px", lineHeight: "1.9"}}>{text}</p>
                 ))}
+                <div className="stats-grid way-stats" style={{display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "28px"}}>
+                  {way.stats.map((stat) => (
+                    <div key={stat.label} style={{borderTop: "1px solid #b3955c", paddingTop: "16px"}}>
+                      <div style={{fontFamily: "'Cormorant Garamond', serif", fontSize: "40px", color: "#04301f"}}>{stat.value}</div>
+                      <div style={{fontSize: "13px", fontWeight: "300", lineHeight: "1.7", color: "rgba(13,43,30,0.72)", marginTop: "4px"}}>{stat.label}</div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
+
+          {meetDzika && (
+            <div style={{marginTop: "120px", background: "#04301f", color: "#faf3e8"}}>
+              <div style={{maxWidth: "1400px", margin: "0 auto", padding: "110px 48px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "80px", alignItems: "center"}}>
+                <div style={{position: "relative"}}>
+                  <img className="story-photo" src={imageSrc(meetDzika.image)} alt={meetDzika.imageAlt} style={{width: "100%", height: "560px", objectFit: "cover", objectPosition: "center 28%", display: "block"}} />
+                  <div className="deco-frame" style={{position: "absolute", top: "-16px", left: "-16px", right: "16px", bottom: "16px", border: "1px solid rgba(179,149,92,0.6)", pointerEvents: "none"}}></div>
+                </div>
+                <div>
+                  <div style={kickerStyle}>{meetDzika.kicker}</div>
+                  <h2 style={{fontFamily: "'Cormorant Garamond', serif", fontWeight: "500", fontSize: "56px", lineHeight: "1.08", margin: "18px 0 0"}}>{meetDzika.title}</h2>
+                  {(meetDzika.paragraphs || []).map((text, i) => (
+                    <p key={i} style={{margin: i === 0 ? "22px 0 0" : "18px 0 0", fontWeight: "300", fontSize: "19px", lineHeight: "1.9", color: "rgba(250,243,232,0.9)"}}>{text}</p>
+                  ))}
+                  <div className="x4" onClick={() => go(meetDzika.cta.page)} style={{cursor: "pointer", display: "inline-flex", marginTop: "34px", background: "#b3955c", color: "#04301f", padding: "17px 32px", fontSize: "13px", fontWeight: "600", letterSpacing: "0.2em", textTransform: "uppercase"}}>{meetDzika.cta.label}</div>
+                </div>
+              </div>
+            </div>
+          )}
     
           <div style={{maxWidth: "1400px", margin: "0 auto", padding: "110px 48px 0"}}>
             <div className="stack-m" style={{display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: "40px"}}>

@@ -166,6 +166,71 @@ input, textarea, button { font-family: "Poppins", sans-serif; }
   margin-top: 38px;
 }
 
+.way-section {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 110px 48px 0;
+}
+.way-spread {
+  display: grid;
+  grid-template-columns: minmax(0, 0.86fr) minmax(0, 1.14fr);
+  gap: 88px;
+  align-items: center;
+}
+.way-portrait {
+  position: relative;
+}
+.way-portrait img {
+  width: 100%;
+  height: 680px;
+  object-fit: cover;
+  object-position: center 76%;
+  display: block;
+}
+.way-portrait .deco-frame {
+  position: absolute;
+  top: -18px;
+  left: -18px;
+  right: 22px;
+  bottom: 22px;
+  border: 1px solid rgba(179, 149, 92, 0.7);
+  pointer-events: none;
+}
+.way-caption {
+  position: absolute;
+  left: 22px;
+  right: 48px;
+  bottom: -26px;
+  background: #04301f;
+  color: #faf3e8;
+  padding: 20px 24px;
+}
+.way-caption .ws-kicker,
+.way-caption-kicker {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: #b3955c;
+}
+.way-caption p {
+  margin: 8px 0 0;
+  font-family: "Cormorant Garamond", serif;
+  font-size: 24px;
+  line-height: 1.25;
+}
+.way-copy {
+  padding: 8px 0 8px 28px;
+  border-left: 1px solid #b3955c;
+}
+.way-copy h2 em {
+  display: block;
+  font-style: italic;
+}
+.way-stats {
+  margin-top: 92px;
+}
+
 .site-burger {
   appearance: none;
   -webkit-appearance: none;
@@ -423,16 +488,65 @@ input, textarea, button { font-family: "Poppins", sans-serif; }
     top: 0 !important;
     bottom: 0 !important;
   }
+  .way-section {
+    padding: 80px 28px 0;
+  }
+  .way-spread {
+    gap: 52px;
+  }
+  .way-portrait img {
+    height: 560px;
+  }
   div.feature-banner {
     height: 440px !important;
   }
 }
 
 @media (max-width: 799px) {
-  [style*="grid-template-columns"]:not(.stay-gallery):not(.team-grid):not(.stats-grid) {
+  [style*="grid-template-columns"]:not(.stay-gallery):not(.team-grid):not(.stats-grid):not(.who-photos):not(.way-spread) {
     grid-template-columns: 1fr !important;
   }
 
+  .way-spread {
+    grid-template-columns: 1fr !important;
+    gap: 56px !important;
+  }
+  .way-portrait img {
+    height: 440px;
+  }
+  .way-portrait .deco-frame {
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+  }
+  .way-caption {
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+  }
+  .way-copy {
+    padding-left: 0;
+    border-left: 0;
+    border-top: 1px solid #b3955c;
+    padding-top: 22px;
+  }
+  .way-stats {
+    margin-top: 48px;
+  }
+  .way-section {
+    padding: 72px 20px 0;
+  }
+
+  .who-photos {
+    grid-template-columns: 1fr !important;
+  }
+  .who-photos img {
+    height: 320px !important;
+  }
+  .story-photo {
+    height: 320px !important;
+  }
   .photo-mosaic {
     grid-template-rows: none !important;
     grid-auto-rows: 220px !important;

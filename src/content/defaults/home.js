@@ -22,10 +22,25 @@ export const home = {
       "You bring the dates. We handle borders, bookings, transfers, tables and the small courtesies that turn a holiday into a memory."
     ],
     stats: [
-      { value: "100%", label: "Locally owned and locally guided." },
-      { value: "24/7", label: "Tunya answers, day or night." },
-      { value: "3", label: "Countries within an hour of your hotel." }
-    ]
+      { value: "253+", label: "Clients served last year." },
+      { value: "10+", label: "Countries our guests travelled from." },
+      { value: "6", label: "Journeys we run ourselves — not a list we resell." }
+    ],
+    image: "/assets/home-born-here.jpg",
+    imageAlt: "The Tunyafrika team on the ground in Victoria Falls",
+    captionKicker: "Victoria Falls",
+    caption: "On the ground. Not on a brochure."
+  },
+  meetDzika: {
+    image: "/assets/meet-dzika.jpg",
+    imageAlt: "Dzikamai at Victoria Falls",
+    kicker: "Meet Dzika",
+    title: "Welcome to our Victoria Falls.",
+    paragraphs: [
+      "I am Dzikamai — Dzika, if we have already stood in the spray together. If you are coming to Victoria Falls, you are coming to people who grew up with the thunder in their ears. This is not a destination we studied. It is home.",
+      "We know the gorge, the border, the morning the river is loudest, and the small courtesies that keep a journey calm. We are real people. If you need a table, a transfer, a quiet lodge, or simply someone who will tell you the truth about the water today — we will help you navigate Victoria Falls."
+    ],
+    cta: { label: "About Tunyafrika", page: "about" }
   },
   days: {
     kicker: "Where it begins",
