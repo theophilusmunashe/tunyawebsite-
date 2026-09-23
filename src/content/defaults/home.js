@@ -5,8 +5,10 @@ export const home = {
     image: "/assets/br-falls-aerial.jpg",
     imageAlt: "Victoria Falls from the air",
     kicker: "Victoria Falls · Zimbabwe",
-    titleLead: "Africa is not a trip. It is a ",
-    titleAccent: "feeling.",
+    title: "Authentic African Xperiences",
+    titleLead: "Authentic African ",
+    titleAccent: "Xperiences",
+    tagline: "Crafted By Locals",
     body: "We begin where the earth roars — and we do not stop there. Tunyafrika crafts journeys that start at Victoria Falls and unfold across the continent.",
     primaryCta: { label: "Start Planning", href: TUNYA_URL },
     secondaryCta: { label: "See Victoria Falls", page: "falls" }

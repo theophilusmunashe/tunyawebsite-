@@ -15,8 +15,8 @@ export default function Home({ go }) {
             <img src={imageSrc(hero.image)} alt={hero.imageAlt} style={coverStyle} />
             <div style={{position: "absolute", inset: "0", background: "linear-gradient(180deg, rgba(4,48,31,0.55) 0%, rgba(4,48,31,0.1) 35%, rgba(4,48,31,0.82) 78%, rgba(4,48,31,0.96) 100%)"}}></div>
             <div className="site-hero-copy">
-              <div style={{fontSize: "13px", fontWeight: "500", letterSpacing: "0.42em", textTransform: "uppercase", color: "#b3955c"}}>{hero.kicker}</div>
-              <h1 style={{fontFamily: "'Cormorant Garamond', serif", fontWeight: "500", fontSize: "92px", lineHeight: "1.02", color: "#faf3e8", margin: "20px auto 0", maxWidth: "15ch", textWrap: "pretty"}}>{hero.titleLead}<em style={{color: "#b3955c"}}>{hero.titleAccent}</em></h1>
+              <h1 style={{fontFamily: "'Cormorant Garamond', serif", fontWeight: "500", fontSize: "86px", lineHeight: "1.02", color: "#faf3e8", margin: "0 auto", maxWidth: "16ch", textWrap: "pretty"}}>{hero.title || <>{hero.titleLead}<em style={{color: "#b3955c"}}>{hero.titleAccent}</em></>}</h1>
+              <div style={{marginTop: "18px", fontSize: "13px", fontWeight: "500", letterSpacing: "0.42em", textTransform: "uppercase", color: "#b3955c"}}>{hero.tagline}</div>
               <p style={{margin: "26px auto 0", maxWidth: "58ch", fontWeight: "300", fontSize: "19px", lineHeight: "1.85", color: "rgba(250,243,232,0.9)"}}>{hero.body}</p>
               <div className="stack-m site-hero-actions">
                 <a className="x12" href={hero.primaryCta.href} target="_blank" rel="noopener" style={{background: "#b3955c", color: "#04301f", padding: "18px 34px", fontSize: "13px", fontWeight: "600", letterSpacing: "0.2em", textTransform: "uppercase", textDecoration: "none"}}>{hero.primaryCta.label}</a>

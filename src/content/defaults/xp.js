@@ -44,12 +44,94 @@ export const xp = {
     title: "Six journeys we are known for.",
     body: "Fully arranged, start to finish — transfers, guides, entries and tables included. Tell us which one and we shape it around your dates.",
     items: [
-      { image: "/assets/br-rafting.jpg", imageAlt: "The Adrenaline Run", kicker: "Flagship I", title: "The Adrenaline Run", body: "Bungee, gorge swing and Grade-5 rafting in one unforgettable day." },
-      { image: "/assets/br-falls-aerial2.jpg", imageAlt: "The Angels' View", kicker: "Flagship II", title: "The Angels' View", body: "Helicopter over the full mile, then the rainforest on foot." },
-      { image: "/assets/br-river-dusk.jpg", imageAlt: "The Weekend Escape", kicker: "Flagship III", title: "The Weekend Escape", body: "Two nights, the Falls, a sunset cruise and a very slow Sunday." },
-      { image: "/assets/br-elephant-portrait.jpg", imageAlt: "The Grand Signature", kicker: "Flagship IV", title: "The Grand Signature", body: "Our most complete week — Falls, Chobe, Boma and a suite above the river." },
-      { image: "/assets/ch-impala.jpg", imageAlt: "The Classic Safari", kicker: "Flagship V", title: "The Classic Safari", body: "Zambezi National Park and a full day across the border in Chobe." },
-      { image: "/assets/br-elephant-calf.jpg", imageAlt: "The Family Basecamp", kicker: "Flagship VI", title: "The Family Basecamp", body: "Gentle days, big animals, a pool for the afternoons and staff who adore children." }
+      {
+        image: "/assets/br-rafting.jpg",
+        imageAlt: "The Adrenaline Run",
+        kicker: "Flagship I · 4 days, 3 nights",
+        title: "The Adrenaline Run",
+        lede: "For the ones who came to feel something.",
+        body: "Four days built around the rush. Quads through the bush, a drop into the Batoka Gorge and the Zambezi at full force, then a full day with the elephants of Chobe to bring your heart rate down. It's the Falls at full throttle, and we handle everything in between.",
+        days: [
+          { title: "Day 1 · Arrive and explore", body: "Airport pickup and transfer to your stay. Victoria Falls town tour: markets, local spots and the lay of the land." },
+          { title: "Day 2 · Into the gorge", body: "Your choice: jet boat through the gorge then abseiling, or white-water rafting then zipline across the gorge." },
+          { title: "Day 3 · Chobe", body: "Full-day Chobe safari in Botswana: game drive, river cruise and lunch. Border crossing handled by us." },
+          { title: "Day 4 · One last ride", body: "Quad biking through the bush, then transfer to the airport." }
+        ],
+        included: ["Quad biking", "Victoria Falls town tour", "Jet boat and abseiling or white-water rafting and zipline", "Full-day Chobe safari", "Airport transfers"]
+      },
+      {
+        image: "/assets/br-falls-aerial2.jpg",
+        imageAlt: "The Angel's View",
+        kicker: "Flagship II · 3 days, 2 nights",
+        title: "The Angel's View",
+        lede: "See it the way the first explorers only imagined.",
+        body: "This one is about seeing the Falls from every angle. First from above, on a helicopter flight over the whole mile of falling water. Then up close, walking the rainforest in the spray. Then from the river at sunset. It ends with a long African dinner under the stars.",
+        days: [
+          { title: "Day 1 · Arrive", body: "Airport pickup and transfer to your stay. Sunset cruise on the upper Zambezi." },
+          { title: "Day 2 · From above, then on foot", body: "Flight of Angels helicopter ride over the Falls. Guided tour of the Falls and rainforest. African dinner experience." },
+          { title: "Day 3 · Depart", body: "Transfer to the airport." }
+        ],
+        included: ["Flight of Angels helicopter ride", "Guided tour of the Falls", "Sunset cruise", "African dinner experience", "Airport transfers"]
+      },
+      {
+        image: "/assets/br-explore-swing.jpg",
+        imageAlt: "The Weekend Escape",
+        kicker: "Flagship III · 3 days, 2 nights",
+        title: "The Weekend Escape",
+        lede: "Friday you're at your desk. Saturday you're in the spray.",
+        body: "The easiest way to say yes to Victoria Falls. See the Falls, get some dust on the quads, watch the sun go down on the Zambezi and eat like royalty. You'll be home by Monday feeling like you've gone for a month.",
+        days: [
+          { title: "Day 1 · Arrive", body: "Tour of Victoria Falls. Sunset cruise on the Zambezi." },
+          { title: "Day 2 · Dust and drums", body: "Quad biking through the bush. African dinner experience." },
+          { title: "Day 3 · Slow Sunday", body: "A free morning to rest, then head home." }
+        ],
+        included: ["Tour of Victoria Falls", "Quad biking", "Sunset cruise", "African dinner experience"]
+      },
+      {
+        image: "/assets/br-elephant-portrait.jpg",
+        imageAlt: "The Grand Signature",
+        kicker: "Flagship IV · 4 days, 3 nights · Our signature",
+        title: "The Grand Signature",
+        lede: "Everything we're known for, in one journey.",
+        body: "Our most complete Xperience. You'll fly over the Falls, spend a full day with the elephants of Chobe, meet elephants up close and finish on a luxury sunset cruise. Every detail is arranged. This is the one people tell stories about.",
+        days: [
+          { title: "Day 1 · Arrive in style", body: "Arrival and transfer. Guided Victoria Falls tour." },
+          { title: "Day 2 · The sky and the giants", body: "Helicopter flight over the Falls. Elephant experience." },
+          { title: "Day 3 · Chobe", body: "Full-day Chobe safari in Botswana. Border crossing handled by us." },
+          { title: "Day 4 · The grand finale", body: "Luxury sunset cruise on the Zambezi, then departure." }
+        ],
+        included: ["Helicopter flight", "Full-day Chobe safari", "Elephant experience", "Victoria Falls tour", "Luxury sunset cruise"]
+      },
+      {
+        image: "/assets/ch-impala.jpg",
+        imageAlt: "The Classic Safari",
+        kicker: "Flagship V · 4 days, 3 nights",
+        title: "The Classic Safari",
+        lede: "The Africa you pictured as a child.",
+        body: "Game drives at golden hour, crocodiles up close, and a baobab more than a thousand years old. Then the river at dusk and a Boma dinner by the fire. It's the classic safari, done properly.",
+        days: [
+          { title: "Day 1 · Arrive", body: "Arrival and transfer. Sunset cruise on the Zambezi." },
+          { title: "Day 2 · Into the wild", body: "Game drive in Zambezi National Park." },
+          { title: "Day 3 · Old giants", body: "Crocodile farm. The Big Tree, a baobab over 1,000 years old. Boma dinner: drums, fire and a feast." },
+          { title: "Day 4 · Depart", body: "Transfer out." }
+        ],
+        included: ["Game drive", "Crocodile farm and the Big Tree", "Sunset cruise", "Boma dinner"]
+      },
+      {
+        image: "/assets/br-elephant-calf.jpg",
+        imageAlt: "The Family Basecamp",
+        kicker: "Flagship VI · 4 days, 3 nights · Sleeps up to 4",
+        title: "The Family Basecamp",
+        lede: "Your own place. Their first adventure.",
+        body: "A home base for the whole family, with space to spread out and cook your own breakfast. Your days are full of animals, water and wonder: a game drive, crocodiles, a giant baobab, a sunset cruise and a Boma night the kids will never forget.",
+        days: [
+          { title: "Day 1 · Settle in", body: "Check in to your self-catering stay. Sunset cruise on the Zambezi." },
+          { title: "Day 2 · Big animals", body: "Game drive." },
+          { title: "Day 3 · Crocs and giants", body: "Crocodile farm and the Big Tree. Boma dinner." },
+          { title: "Day 4 · Home", body: "Check out and depart." }
+        ],
+        included: ["Self-catering stay for up to 4", "Game drive", "Crocodile farm and the Big Tree", "Sunset cruise", "Boma dinner"]
+      }
     ]
   },
   closing: {

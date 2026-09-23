@@ -21,3 +21,6 @@ public/accomodations-media/*
 # Content engine runtime data
 public/api/content-data/store.json
 public/api/content-data/*.tmp
+
+# Local booking-request log written by the Vite plugin
+public/api/book-requests.json
