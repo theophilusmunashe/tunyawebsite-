@@ -11,7 +11,7 @@ export const home = {
     tagline: "Crafted By Locals",
     body: "We begin where the earth roars — and we do not stop there. Tunyafrika crafts journeys that start at Victoria Falls and unfold across the continent.",
     primaryCta: { label: "Start Planning", href: TUNYA_URL },
-    secondaryCta: { label: "See Victoria Falls", page: "falls" }
+    secondaryCta: { label: "See Xperiences", page: "xp" }
   },
   way: {
     kicker: "The Tunyafrika Way",
