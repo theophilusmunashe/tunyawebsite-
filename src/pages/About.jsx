@@ -77,7 +77,7 @@ export default function About({ go }) {
               </div>
               <div style={{fontSize: "13px", fontWeight: "300", color: "rgba(13,43,30,0.6)", maxWidth: "34ch", textAlign: "right"}}>{team.note}</div>
             </div>
-            <div className="team-grid" style={{display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "20px", marginTop: "44px"}}>
+            <div className="team-grid" style={{display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "20px", marginTop: "44px"}}>
               {team.members.map((member) => (
                 <div key={member.name}>
                   <div style={{height: "320px", background: "linear-gradient(160deg, #0b3d28 0%, #04301f 100%)", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid rgba(179,149,92,0.45)", overflow: "hidden"}}>
