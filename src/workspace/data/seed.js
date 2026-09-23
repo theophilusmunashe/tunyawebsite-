@@ -27,14 +27,14 @@ const REASSIGN = { crew_tc: "crew_tm", crew_f: "crew_dm" };
 
 export const DEFAULT_CREW = [
   { id: "crew_tm", initials: "TM", name: "Theophilus Munashe Maposa", role: "Admin", email: "theophilus@tunyafrika.com", phone: "" },
-  { id: "crew_rv", initials: "RV", name: "Rudolph Benjamin Volksgyn", role: "Admin", email: "rudolph@tunyafrika.com", phone: "" },
+  { id: "crew_rv", initials: "RV", name: "Rudolph Benjamin Volkwyn", role: "Admin", email: "rudolph@tunyafrika.com", phone: "" },
   { id: "crew_dm", initials: "DM", name: "Dzikamai Ronald Muchemedzi", role: "Admin", email: "dzikamai@tunyafrika.com", phone: "" }
 ];
 
 export const DIRECTORS = [
   { id: "crew_tm", short: "Theo", name: "Theophilus Munashe Maposa" },
   { id: "crew_dm", short: "Dzika", name: "Dzikamai Ronald Muchemedzi" },
-  { id: "crew_rv", short: "Rudolph", name: "Rudolph Benjamin Volksgyn" }
+  { id: "crew_rv", short: "Rudolph", name: "Rudolph Benjamin Volkwyn" }
 ];
 
 export const LOAN_KINDS = [
@@ -70,10 +70,16 @@ export async function migrateWorkspace() {
   if (crew.length) {
     const next = crew
       .filter((c) => !DROPPED_CREW_IDS.includes(c.id) && !isDroppedName(c.name))
-      .map((c) => ({ ...c, role: "Admin" }));
+      .map((c) => {
+        const row = { ...c, role: "Admin" };
+        if (c.id === "crew_rv" || /volksgyn/i.test(c.name || "")) {
+          row.name = "Rudolph Benjamin Volkwyn";
+        }
+        return row;
+      });
     const same =
       crew.length === next.length &&
-      crew.every((c) => next.some((n) => n.id === c.id && n.role === "Admin"));
+      crew.every((c) => next.some((n) => n.id === c.id && n.role === "Admin" && n.name === c.name));
     if (!same) await kvSet("crew", next);
   }
 

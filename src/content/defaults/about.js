@@ -39,7 +39,7 @@ export const about = {
     note: "Portraits are placeholders — send us the real photographs and we'll drop them in.",
     members: [
       { initials: "TM", name: "Theophilus Munashe Maposa", role: "Operations" },
-      { initials: "RV", name: "Rudolph Benjamin Volksgyn", role: "Operations" },
+      { initials: "RV", name: "Rudolph Benjamin Volkwyn", role: "Operations" },
       { initials: "DM", name: "Dzikamai Ronald Muchemedzi", role: "Operations" },
       { initials: "TC", name: "Tatenda Blessing Chakwesha", role: "Operations" },
       { initials: "F", name: "Fungai", role: "Operations" }
