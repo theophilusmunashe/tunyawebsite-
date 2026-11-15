@@ -3,18 +3,10 @@
  * Accommodations marketplace API for Tunyafrika.
  * Public reads strip provider/location details. Admin writes require the workspace key.
  */
-header("Content-Type: application/json; charset=utf-8");
-header("X-Content-Type-Options: nosniff");
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type, X-Tunya-Key");
+require __DIR__ . "/_lib/security.php";
+tunya_api_headers(true);
+tunya_require_same_origin_post();
 
-if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") {
-  http_response_code(204);
-  exit;
-}
-
-$EXPECTED_KEY = getenv("TUNYA_MAIL_KEY") ?: (getenv("TUNYA_WORKSPACE_KEY") ?: "123456");
 $DATA_DIR = __DIR__ . "/accomodations-data";
 $STORE_FILE = $DATA_DIR . "/store.json";
 $MEDIA_DIR = dirname(__DIR__) . "/accomodations-media";
@@ -75,21 +67,8 @@ function uid($prefix) {
   return $prefix . "_" . bin2hex(random_bytes(6));
 }
 
-function request_key() {
-  $hdr = $_SERVER["HTTP_X_TUNYA_KEY"] ?? "";
-  if ($hdr !== "") return (string)$hdr;
-  return "";
-}
-
-function require_admin($expected) {
-  global $body;
-  $key = request_key();
-  if ($key === "" && is_array($body)) {
-    $key = (string)($body["key"] ?? "");
-  }
-  if (!hash_equals($expected, $key)) {
-    respond(403, ["ok" => false, "error" => "Not authorised."]);
-  }
+function require_admin($unused = null) {
+  tunya_require_admin();
 }
 
 function public_listing($listing) {
@@ -179,6 +158,10 @@ switch ($action) {
 
   case "enquire": {
     if ($method !== "POST") respond(405, ["ok" => false, "error" => "Use POST."]);
+    tunya_rate_limit_or_fail("enquire:" . tunya_client_ip(), 6, 3600, "You've sent several enquiries already. Please WhatsApp us on +263 78 266 9251 instead.");
+    foreach (["guestName" => 120, "guestEmail" => 160, "guestPhone" => 40, "checkIn" => 40, "checkOut" => 40, "guests" => 60] as $f => $max) {
+      if (isset($body[$f])) $body[$f] = tunya_clean($body[$f], $max);
+    }
     $listingId = trim((string)($body["listingId"] ?? ""));
     [, $listing] = find_by_id($store["listings"], $listingId);
     if (!$listing || ($listing["status"] ?? "") !== "published") {
@@ -240,7 +223,7 @@ switch ($action) {
   }
 
   case "admin_bootstrap": {
-    require_admin($EXPECTED_KEY);
+    require_admin();
     respond(200, [
       "ok" => true,
       "providers" => $store["providers"],
@@ -251,7 +234,7 @@ switch ($action) {
   }
 
   case "save_provider": {
-    require_admin($EXPECTED_KEY);
+    require_admin();
     if ($method !== "POST") respond(405, ["ok" => false, "error" => "Use POST."]);
     $provider = $body["provider"] ?? null;
     if (!is_array($provider)) respond(400, ["ok" => false, "error" => "Missing provider."]);
@@ -279,7 +262,7 @@ switch ($action) {
   }
 
   case "delete_provider": {
-    require_admin($EXPECTED_KEY);
+    require_admin();
     $id = trim((string)($body["id"] ?? ""));
     $store["providers"] = array_values(array_filter($store["providers"], function ($p) use ($id) {
       return ($p["id"] ?? "") !== $id;
@@ -289,7 +272,7 @@ switch ($action) {
   }
 
   case "save_listing": {
-    require_admin($EXPECTED_KEY);
+    require_admin();
     $listing = $body["listing"] ?? null;
     if (!is_array($listing)) respond(400, ["ok" => false, "error" => "Missing listing."]);
     $now = (int)(microtime(true) * 1000);
@@ -368,7 +351,7 @@ switch ($action) {
   }
 
   case "delete_listing": {
-    require_admin($EXPECTED_KEY);
+    require_admin();
     $id = trim((string)($body["id"] ?? ""));
     [, $listing] = find_by_id($store["listings"], $id);
     if ($listing) {
@@ -388,7 +371,7 @@ switch ($action) {
   }
 
   case "upload_image": {
-    require_admin($EXPECTED_KEY);
+    require_admin();
     $listingId = trim((string)($body["listingId"] ?? ""));
     $caption = trim((string)($body["caption"] ?? ""));
     $filename = preg_replace("/[^A-Za-z0-9._-]/", "", (string)($body["filename"] ?? "photo.jpg"));
@@ -434,7 +417,7 @@ switch ($action) {
   }
 
   case "delete_image": {
-    require_admin($EXPECTED_KEY);
+    require_admin();
     $listingId = trim((string)($body["listingId"] ?? ""));
     $imageId = trim((string)($body["imageId"] ?? ""));
     [$idx, $listing] = find_by_id($store["listings"], $listingId);
@@ -467,7 +450,7 @@ switch ($action) {
   }
 
   case "save_enquiry": {
-    require_admin($EXPECTED_KEY);
+    require_admin();
     $enquiry = $body["enquiry"] ?? null;
     if (!is_array($enquiry) || empty($enquiry["id"])) {
       respond(400, ["ok" => false, "error" => "Missing enquiry."]);
@@ -488,7 +471,7 @@ switch ($action) {
   }
 
   case "delete_enquiry": {
-    require_admin($EXPECTED_KEY);
+    require_admin();
     $id = trim((string)($body["id"] ?? ""));
     $store["enquiries"] = array_values(array_filter($store["enquiries"], function ($e) use ($id) {
       return ($e["id"] ?? "") !== $id;

@@ -1,11 +1,7 @@
 <?php
-header("Content-Type: application/json; charset=utf-8");
-header("X-Content-Type-Options: nosniff");
-
-if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") {
-  http_response_code(204);
-  exit;
-}
+require __DIR__ . "/_lib/security.php";
+tunya_api_headers();
+tunya_require_same_origin_post();
 
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
   http_response_code(405);
@@ -15,7 +11,6 @@ if ($_SERVER["REQUEST_METHOD"] !== "POST") {
 
 $FROM = "operations@tunyafrika.com";
 $FROM_NAME = "Tunyafrika Xperiences";
-$EXPECTED_KEY = getenv("TUNYA_MAIL_KEY") ?: "123456";
 
 $raw = file_get_contents("php://input");
 $data = json_decode($raw, true);
@@ -25,12 +20,9 @@ if (!is_array($data)) {
   exit;
 }
 
-$key = (string)($data["key"] ?? "");
-if (!hash_equals($EXPECTED_KEY, $key)) {
-  http_response_code(403);
-  echo json_encode(["ok" => false, "error" => "Not authorised."]);
-  exit;
-}
+// Only signed-in staff can send mail from the operations address.
+$admin = tunya_require_admin();
+tunya_rate_limit_or_fail("mail:" . ($admin["id"] ?? "x"), 60, 3600, "Mail limit reached (60 per hour). Try again later.");
 
 function clean_header($value) {
   return trim(str_replace(["\r", "\n"], "", (string)$value));

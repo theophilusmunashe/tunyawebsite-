@@ -28,3 +28,9 @@ public/api/book-requests.json
 # Shared workspace runtime data (generated on the server / local Vite API)
 public/api/workspace-data/store.json
 public/api/workspace-data/*.tmp
+
+# Server-only config and security runtime data
+tunya-config.php
+public/api/security-data/*
+!public/api/security-data/.gitkeep
+!public/api/security-data/.htaccess

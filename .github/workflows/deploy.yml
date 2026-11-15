@@ -42,3 +42,4 @@ jobs:
             **/content-data/*.tmp
             **/workspace-data/store.json
             **/workspace-data/*.tmp
+            **/security-data/ratelimit/**
