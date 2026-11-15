@@ -1,4 +1,4 @@
-export const TUNYA_URL = "https://www.tunya.africa";
+export const TUNYA_URL = "https://asktunya.vercel.app/";
 
 export const site = {
   logo: "/assets/logo-cream.png",
@@ -14,16 +14,16 @@ export const site = {
     menuLabel: "Beyond the Falls",
     menu: [
       { label: "Destinations", page: "beyond" },
-      { label: "Customs & Immigration", page: "visas" },
+      { label: "Visas & Borders", page: "visas" },
       { label: "About Tunyafrika", page: "about" },
-      { label: "Our Footprints on Socials", page: "social" }
+      { label: "Follow Us on Socials", page: "social" }
     ],
-    meetTunya: { label: "Meet Tunya", href: TUNYA_URL },
+    meetTunya: { label: "Ask Tunya", href: TUNYA_URL },
     cta: { label: "Plan My Trip", href: TUNYA_URL }
   },
   footer: {
-    tagline: "Xpectional Xperiences",
-    blurb: "Locally owned, locally guided journeys from Victoria Falls into the whole of Africa.",
+    tagline: "Locally owned · Victoria Falls",
+    blurb: "Victoria Falls tours, activities and stays, planned and guided by our own local team. We also take you on to Botswana, Zambia, Namibia and South Africa.",
     exploreHeading: "Explore",
     explore: [
       { label: "Victoria Falls", page: "falls" },
@@ -32,16 +32,16 @@ export const site = {
       { label: "Accommodations", href: "/accomodations" },
       { label: "Updates", href: "/content" },
       { label: "Beyond the Falls", page: "beyond" },
-      { label: "Customs & Immigration", page: "visas" },
+      { label: "Visas & Borders", page: "visas" },
       { label: "About Tunyafrika", page: "about" },
-      { label: "Our Footprints on Socials", page: "social" }
+      { label: "Follow Us on Socials", page: "social" }
     ],
     bookHeading: "Book",
     book: [
-      { label: "Meet Tunya", page: "ai" },
+      { label: "Ask Tunya", page: "ai" },
       { label: "Plan my trip", page: "plan" }
     ],
-    bookNote: "www.tunya.africa",
+    bookNote: "asktunya.vercel.app",
     contactHeading: "Contact",
     phone: "+263 78 266 9251",
     email: "enquiries@tunyafrika.com",

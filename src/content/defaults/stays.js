@@ -4,15 +4,15 @@ export const stays = {
   hero: {
     image: "/assets/br-stay-deck.jpg",
     imageAlt: "A lodge deck over the bush",
-    kicker: "Where you sleep",
-    title: "Wake to the spray. Sleep to the river."
+    kicker: "Victoria Falls accommodation",
+    title: "Where to stay in Victoria Falls."
   },
   categories: [
-    { title: "Riverside lodges", body: "Thatch, teak decks and the Zambezi sliding past your morning coffee." },
-    { title: "Boutique hotels", body: "Colonial bones, modern comfort, a short walk from the rainforest gate." },
-    { title: "Safari suites", body: "Canvas and copper on a private concession — game at the waterhole from bed." },
-    { title: "Family villas", body: "Self-catering space, a pool for the children, staff who adore them." },
-    { title: "Honeymoon retreats", body: "Private plunge pools, dinner on the deck, nobody else in sight." }
+    { title: "Riverside lodges", body: "Thatch, teak decks and the Zambezi flowing past while you have your morning coffee." },
+    { title: "Boutique hotels", body: "Classic buildings with modern comfort, a short walk from the rainforest entrance." },
+    { title: "Safari suites", body: "Tented suites on a private concession. Watch game at the waterhole from your bed." },
+    { title: "Family villas", body: "Self-catering space, a pool for the children and staff who love having them." },
+    { title: "Honeymoon retreats", body: "Private plunge pools, dinner on your deck and nobody else in sight." }
   ],
   gallery: [
     { image: "/assets/br-stay-pool.jpg", imageAlt: "", wide: true },
@@ -23,7 +23,7 @@ export const stays = {
     { image: "/assets/br-stay-selfcater.jpg", imageAlt: "", wide: true }
   ],
   closing: {
-    title: "Tell Tunya your style — we hold the room before it's gone.",
+    title: "Tell us your style and budget. We'll find the room and hold it.",
     cta: { label: "Find My Stay", href: TUNYA_URL }
   }
 };

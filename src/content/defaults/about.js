@@ -5,14 +5,14 @@ export const about = {
     image: "/assets/br-promise-crew.jpg",
     imageAlt: "The people behind Tunyafrika",
     kicker: "About Tunyafrika",
-    title: "We are the people who live beside the thunder."
+    title: "We live in Victoria Falls. We run every trip."
   },
   who: {
     kicker: "Who we are",
-    title: "A Victoria Falls company, built by Victoria Falls people.",
+    title: "A Victoria Falls company, run by Victoria Falls people.",
     paragraphs: [
-      "Tunyafrika Xperiences was founded on a simple frustration: the world's most extraordinary waterfall was being sold to visitors by people who had never stood in its spray. We thought the story deserved to be told by the people who grew up in it.",
-      "Today we plan, book and personally look after journeys that begin at Mosi-oa-Tunya and reach across the continent — and we built Tunya, Africa's first conversational travel assistant, so that anyone, anywhere, can reach us in a sentence."
+      "We started Tunyafrika Xperiences out of frustration. The world's most famous waterfall was being sold to visitors by people who had never stood in its spray. We grew up here, and we thought you should hear about it from us.",
+      "Today Theo, Rudolph and Dzika plan, book and personally look after your Victoria Falls tours, activities and stays, plus trips on into Botswana, Zambia, Namibia and South Africa. We also built Ask Tunya, a trip-planning assistant, so you can reach us any time. Whatever you ask it, one of us follows up."
     ],
     photos: [
       { image: "/assets/about-dzika-arrivals.jpg", imageAlt: "Meeting guests at Victoria Falls International Airport", position: "center 35%" },
@@ -21,27 +21,27 @@ export const about = {
     ]
   },
   mandate: {
-    kicker: "Our mandate",
+    kicker: "What you can expect",
     items: [
-      { title: "Make it effortless", body: "One conversation should be enough to plan a whole journey — borders, bookings, transfers and tables handled before you land." },
-      { title: "Keep it ours", body: "Local guides, local lodges, local suppliers. What our visitors spend should stay in the town that hosts them." },
-      { title: "Tell it truthfully", body: "No inflated promises, no hidden extras. If the water is low, we say so — and show you what is spectacular instead." }
+      { title: "Easy planning", body: "One conversation should be enough. We sort out borders, bookings, transfers and dinner tables before you land." },
+      { title: "Local, all the way", body: "Local guides, local lodges, local suppliers. The money you spend stays in the town that hosts you." },
+      { title: "Straight answers", body: "No inflated promises and no hidden extras. If the water is low, we tell you, and we show you what's worth seeing instead." }
     ]
   },
   beliefs: {
     kicker: "What we believe",
-    title: "Travel should leave two things better: you, and the place you visited.",
+    title: "Good travel leaves two things better: you, and the place you visit.",
     items: [
-      "That a guide's story is worth more than a brochure's adjective.",
-      "That technology should remove friction, never remove people.",
-      "That hospitality is a Zimbabwean inheritance, not a service standard.",
-      "That the wild is a guest we are hosting, not a product we are selling."
+      "A guide's story is worth more than a brochure's adjectives.",
+      "Technology should make travel easier, never replace the people.",
+      "Hospitality is something Zimbabweans grow up with, not a service standard.",
+      "The wild is a guest we host, not a product we sell."
     ]
   },
   team: {
-    kicker: "The faces behind Tunya",
-    title: "The team",
-    note: "Portraits are placeholders — send us the real photographs and we'll drop them in.",
+    kicker: "The people you'll deal with",
+    title: "Meet the team",
+    note: "Say hello any time on WhatsApp: +263 78 266 9251. One of us will answer.",
     members: [
       { initials: "TM", name: "Theophilus Munashe Maposa", role: "Operations" },
       { initials: "RV", name: "Rudolph Benjamin Volkwyn", role: "Operations" },

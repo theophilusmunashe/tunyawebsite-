@@ -7,8 +7,8 @@ export const visas = {
     image: "/assets/br-explore-bridge.jpg",
     imageAlt: "The Victoria Falls Bridge border crossing",
     kicker: "Visas & Immigration",
-    title: "Africa, minus the paperwork.",
-    body: "What you need before you fly, and what you need in your hand at the border. We keep this page current — and for guests travelling with us, we do the admin ourselves.",
+    title: "Visas and borders, made simple.",
+    body: "Zimbabwe visa rules, the KAZA UniVisa and every border in between: what you need before you fly, and what to have in your hand at the border. We keep this page up to date. If you travel with us, we do the admin for you.",
     reviewed: "Last reviewed August 2026",
     primaryCta: { label: "Ask Us About Your Passport", href: TUNYA_URL },
     secondaryCta: { label: "Apply for a ZIMRA TIP", href: ETIP_URL }
@@ -25,20 +25,20 @@ export const visas = {
   essentials: {
     kicker: "Before you fly",
     title: "Six things to get right.",
-    body: "Most border trouble is avoidable and starts at home. Run through this list before you pack.",
+    body: "Most border trouble starts at home, and most of it is easy to avoid. Check this list before you pack.",
     items: [
-      { number: "01", title: "Six months on your passport", body: "Zimbabwe, Zambia, Botswana, Namibia and South Africa all expect your passport to be valid for at least six months beyond the date you arrive. Renew early — appointments get scarce in peak season." },
-      { number: "02", title: "Blank pages, more than you think", body: "Allow three blank pages for every country you enter. A five-country Southern Africa itinerary can swallow a surprising amount of space, and insufficient pages is a legitimate reason to refuse entry." },
-      { number: "03", title: "Know your visa category", body: "Every country sorts nationalities into groups: visa-free, visa on arrival, or apply-before-you-travel. Confirm which one your passport falls into on the official portal — it decides whether you can simply land or not." },
+      { number: "01", title: "Six months on your passport", body: "Zimbabwe, Zambia, Botswana, Namibia and South Africa all expect your passport to be valid for at least six months beyond the date you arrive. Renew early: appointments get scarce in peak season." },
+      { number: "02", title: "Blank pages, more than you think", body: "Allow three blank pages for every country you enter. A five-country Southern Africa trip uses more space than you expect, and not having enough pages is a valid reason to refuse you entry." },
+      { number: "03", title: "Know your visa category", body: "Every country sorts nationalities into groups: visa-free, visa on arrival, or apply-before-you-travel. Check which one your passport falls into on the official portal. It decides whether you can simply land, or must apply first." },
       { number: "04", title: "Clean US dollars in cash", body: "Visa fees and border charges are paid in US dollars. Card terminals at land borders fail often. Bring recent, undamaged notes in small denominations; torn or pre-2009 bills are frequently refused." },
       { number: "05", title: "Return ticket and proof of funds", body: "Immigration officers may ask for an onward or return ticket and evidence that you can support yourself. A printed itinerary and a card statement settle the question quickly." },
-      { number: "06", title: "Your accommodation address", body: "Arrival forms ask where you are staying. Have the lodge name, address and phone number written down — not buried in an email you cannot open without wifi." }
+      { number: "06", title: "Your accommodation address", body: "Arrival forms ask where you are staying. Write down the lodge name, address and phone number. Don't rely on an email you can't open without wifi." }
     ]
   },
   kaza: {
     kicker: "The one visa worth knowing",
     title: "The KAZA UniVisa",
-    body: "One fifty-dollar visa covers Zimbabwe and Zambia, with as many crossings between the two as you like. If you plan to see both sides of Victoria Falls — and you should — this is the document you want.",
+    body: "One fifty-dollar visa covers Zimbabwe and Zambia, and you can cross between the two as often as you like. If you plan to see both sides of Victoria Falls (and you should), this is the visa to get.",
     facts: [
       { label: "Cost", value: "USD 50" },
       { label: "Validity", value: "30 days from first entry" },
@@ -51,7 +51,7 @@ export const visas = {
       "Day trips into Botswana through the Kazungula border, so a Chobe game drive stays within the visa.",
       "Both airports and both land borders at the Falls: Victoria Falls and Livingstone airports, the Victoria Falls border and Kazungula."
     ],
-    watchTitle: "Where people come unstuck",
+    watchTitle: "Where people get caught out",
     watch: [
       "Overnighting in Botswana voids it. Sleep on the Botswana side and you must buy a new UniVisa to come back.",
       "It is not sold everywhere. Harare airport does not issue the UniVisa — arrive at the Falls, Livingstone or Lusaka instead.",
@@ -59,7 +59,7 @@ export const visas = {
       "No extensions. You cannot extend a UniVisa, though you may buy up to three in a calendar year.",
       "Eligibility lists change. Governments revise the qualifying nationalities from time to time — check yours close to departure."
     ],
-    note: "Holders of South African and most other SADC passports do not need the UniVisa at all: you are stamped in visa-free for short tourist visits to both countries. It only matters for companions travelling on non-exempt passports.",
+    note: "If you hold a South African or most other SADC passports, you do not need the UniVisa at all: you are stamped in visa-free for short tourist visits to both countries. It only matters if someone in your group travels on a non-exempt passport.",
     links: [
       { label: "Zimbabwe e-Visa portal", href: "https://www.evisa.gov.zw" },
       { label: "Zambia immigration e-services", href: "https://www.zambiaimmigration.gov.zm/kaza-univisa/" }
@@ -68,7 +68,7 @@ export const visas = {
   countries: {
     kicker: "Country by country",
     title: "Southern Africa, passport by passport.",
-    body: "Choose a country for the essentials. Requirements below are the common case for tourist visits — your nationality may differ, so confirm before you fly.",
+    body: "Pick a country to see the essentials. These are the usual requirements for tourist visits. Your nationality may be treated differently, so confirm before you fly.",
     items: [
       {
         name: "Zimbabwe",
@@ -296,8 +296,8 @@ export const visas = {
   },
   help: {
     kicker: "Get help",
-    title: "Send us your passport, we will send back the plan.",
-    body: "Tell us which passports are travelling and where you want to go. We will tell you exactly which visas you need, what they cost, where to get them and what to carry — and for guests booked with us, we handle the applications.",
+    title: "Tell us your passport. We'll send back the plan.",
+    body: "Tell us which passports are travelling and where you want to go. We'll tell you exactly which visas you need, what they cost, where to get them and what to carry. If you're booked with us, we handle the applications for you.",
     primaryCta: { label: "Ask Tunya", href: TUNYA_URL },
     secondaryCta: { label: "Plan My Trip", page: "plan" },
     disclaimer: "This page is a guide, not legal advice. Immigration and customs rules change at short notice and the final decision always rests with the officer at the border. Confirm your own requirements with the relevant government portal or with us before you travel."
