@@ -1,3 +1,4 @@
+import { makeGo } from "../routes.js";
 import { Route, Routes, useNavigate } from "react-router-dom";
 import Header from "../components/Header.jsx";
 import Footer from "../components/Footer.jsx";
@@ -6,26 +7,7 @@ import AccomodationsGallery from "../pages/AccomodationsGallery.jsx";
 import AccomodationDetail from "../pages/AccomodationDetail.jsx";
 
 function siteGo(navigate) {
-  return (next) => {
-    if (next === "accomodations" || next === "/accomodations") {
-      navigate("/accomodations");
-      window.scrollTo({ top: 0, behavior: "auto" });
-      return;
-    }
-    if (next === "content" || next === "/content") {
-      navigate("/content");
-      window.scrollTo({ top: 0, behavior: "auto" });
-      return;
-    }
-    navigate("/");
-    // Defer so the main App can pick up the intended page via session flag.
-    try {
-      sessionStorage.setItem("tunya-go-page", next);
-    } catch {
-      /* ignore */
-    }
-    window.scrollTo({ top: 0, behavior: "auto" });
-  };
+  return makeGo(navigate);
 }
 
 export default function AccomodationsApp() {

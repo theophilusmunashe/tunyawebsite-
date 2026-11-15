@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useWorkspace, workspaceKey } from "./store.jsx";
+import { useWorkspace } from "./store.jsx";
 import { Button } from "./ui.jsx";
 
 export default function Gate() {
@@ -8,20 +8,30 @@ export default function Gate() {
   const [key, setKey] = useState("");
   const [stay, setStay] = useState(true);
   const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
 
   const people = useMemo(() => crew || [], [crew]);
 
-  const enter = () => {
-    const expected = workspaceKey();
-    if (key.trim() !== expected) {
-      setError("Wrong password.");
-      return;
-    }
+  // The password is checked on the server; the browser never knows the right answer.
+  const enter = async () => {
+    if (busy) return;
     if (!picked) {
       setError("Select a user.");
       return;
     }
-    signIn(picked, stay);
+    if (!key) {
+      setError("Enter your password.");
+      return;
+    }
+    setBusy(true);
+    try {
+      await signIn(picked, key, stay);
+    } catch (err) {
+      setError(err.message || "Could not sign in.");
+      setKey("");
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -64,7 +74,7 @@ export default function Gate() {
         </label>
         {error && <p style={{ color: "#e07a4c", fontSize: 13, margin: "12px 0 0" }}>{error}</p>}
         <div className="ws-actions">
-          <Button onClick={enter}>Sign in</Button>
+          <Button onClick={enter} disabled={busy}>{busy ? "Signing in…" : "Sign in"}</Button>
           <a href="/" className="ws-btn ghost" style={{ textDecoration: "none", display: "inline-flex", alignItems: "center" }}>Back to site</a>
         </div>
       </div>

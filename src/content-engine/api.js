@@ -1,3 +1,5 @@
+import { adminFetch } from "../lib/adminSession.js";
+
 const RELATIVE_ENDPOINT = "/api/content.php";
 const LIVE_ENDPOINT = "https://www.tunyafrika.com/api/content.php";
 
@@ -42,10 +44,6 @@ export function usesRemoteContentApi() {
   return contentEndpoint() === LIVE_ENDPOINT || Boolean(import.meta.env.VITE_CONTENT_API_URL);
 }
 
-function workspaceKey() {
-  return import.meta.env.VITE_MAIL_KEY || import.meta.env.VITE_WORKSPACE_KEY || "123456";
-}
-
 function httpErrorMessage(status, data = {}) {
   if (data.error) return data.error;
   if (status === 405) {
@@ -69,21 +67,9 @@ async function parse(res) {
 }
 
 async function adminPost(action, payload = {}) {
-  const key = workspaceKey();
-  const body = JSON.stringify({ action, key, ...payload });
-  const headers = {
-    "Content-Type": "application/json",
-    Accept: "application/json",
-    "X-Tunya-Key": key
-  };
-  let endpoint = contentEndpoint();
-  let res = await fetch(endpoint, { method: "POST", headers, body });
-  // If a static host still served /api/*.php, retry against live cPanel.
-  if (res.status === 405 && endpoint !== LIVE_ENDPOINT) {
-    endpoint = LIVE_ENDPOINT;
-    res = await fetch(endpoint, { method: "POST", headers, body });
-  }
-  return parse(res);
+  // Admin actions are same-origin only (session cookie + CSRF). Previews on
+  // Vercel/Netlify can read public updates but cannot sign in.
+  return parse(await adminFetch(RELATIVE_ENDPOINT, { method: "POST", body: { action, ...payload } }));
 }
 
 export async function publicUpdates() {

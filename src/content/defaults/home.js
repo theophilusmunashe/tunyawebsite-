@@ -4,32 +4,38 @@ export const home = {
   hero: {
     image: "/assets/br-falls-aerial.jpg",
     imageAlt: "Victoria Falls from the air",
+    // Hero film (same footage as Ask Tunya), served by Cloudinary: muted, no audio track, sized per screen.
+    video: {
+      desktop: "https://res.cloudinary.com/dwx3y9j1d/video/upload/q_auto:low,w_1280,ac_none,vc_h264/v1793800338/hero_ql5jme.mp4",
+      mobile: "https://res.cloudinary.com/dwx3y9j1d/video/upload/q_auto:eco,w_720,ac_none,vc_h264/v1793800338/hero_ql5jme.mp4",
+      poster: "https://res.cloudinary.com/dwx3y9j1d/video/upload/so_0,q_auto,f_jpg,w_1600/v1793800338/hero_ql5jme.jpg"
+    },
     kicker: "Victoria Falls · Zimbabwe",
-    title: "Authentic African Xperiences",
-    titleLead: "Authentic African ",
-    titleAccent: "Xperiences",
-    tagline: "Crafted By Locals",
-    body: "We begin where the earth roars — and we do not stop there. Tunyafrika crafts journeys that start at Victoria Falls and unfold across the continent.",
-    primaryCta: { label: "Start Planning", href: TUNYA_URL },
-    secondaryCta: { label: "See Xperiences", page: "xp" }
+    title: "Victoria Falls Tours by Locals",
+    titleLead: "Victoria Falls Tours ",
+    titleAccent: "by Locals",
+    tagline: "Theo · Rudolph · Dzika",
+    body: "Tours, activities and places to stay in Victoria Falls, planned by a small team who live here. We pick you up, book everything and handle the borders, including a Chobe day trip to Botswana if you want one.",
+    primaryCta: { label: "Plan My Trip", href: TUNYA_URL },
+    secondaryCta: { label: "See Things To Do", page: "xp" }
   },
   way: {
-    kicker: "The Tunyafrika Way",
+    kicker: "Who you're dealing with",
     titleLead: "Born here. ",
-    titleAccent: "Very African.",
+    titleAccent: "Based here.",
     paragraphs: [
-      "Every Tunyafrika journey is built by people who grew up within earshot of the thunder. We know which guide tells the best stories, which lodge has the quiet deck, which morning the light on the gorge is worth waking for.",
-      "You bring the dates. We handle borders, bookings, transfers, tables and the small courtesies that turn a holiday into a memory."
+      "We grew up within earshot of the Falls. We know which guide tells the best stories, which lodge has the quiet deck, and which morning the light on the gorge is worth the early start.",
+      "You give us your dates. We sort out the rest: airport pickup, activity bookings, border crossings, transfers and dinner reservations. One team looks after you from your first message to your flight home."
     ],
     stats: [
-      { value: "253+", label: "Clients served last year." },
-      { value: "10+", label: "Countries our guests travelled from." },
-      { value: "6", label: "Journeys we run ourselves — not a list we resell." }
+      { value: "253+", label: "Guests we looked after last year." },
+      { value: "10+", label: "Countries our guests came from." },
+      { value: "6", label: "Trips we run ourselves, not resold from a list." }
     ],
     image: "/assets/home-born-here.jpg",
     imageAlt: "The Tunyafrika team on the ground in Victoria Falls",
     captionKicker: "Victoria Falls",
-    caption: "On the ground. Not on a brochure."
+    caption: "Our team, out in town. Not in a brochure."
   },
   meetDzika: {
     image: "/assets/meet-dzika.jpg",
@@ -37,39 +43,39 @@ export const home = {
     kicker: "Meet Dzika",
     title: "Welcome to our Victoria Falls.",
     paragraphs: [
-      "I am Dzikamai — Dzika, if we have already stood in the spray together. If you are coming to Victoria Falls, you are coming to people who grew up with the thunder in their ears. This is not a destination we studied. It is home.",
-      "We know the gorge, the border, the morning the river is loudest, and the small courtesies that keep a journey calm. We are real people. If you need a table, a transfer, a quiet lodge, or simply someone who will tell you the truth about the water today — we will help you navigate Victoria Falls."
+      "I'm Dzikamai, but everyone calls me Dzika. I run operations at Tunyafrika with Theo and Rudolph. We grew up here with the sound of the Falls in our ears. This isn't a place we studied. It's home.",
+      "Ask us anything: when the water is highest, how the border works, which lodge is quiet, where to eat tonight. We'll give you a straight answer, even when it's not the one you hoped for. Need a table, a transfer or a pickup? Message us and one of us will sort it."
     ],
-    cta: { label: "About Tunyafrika", page: "about" }
+    cta: { label: "Meet the Team", page: "about" }
   },
   days: {
-    kicker: "Where it begins",
-    title: "Four days that rearrange you.",
-    linkLabel: "All Xperiences →",
+    kicker: "Your first visit, day by day",
+    title: "Four days in Victoria Falls.",
+    linkLabel: "All things to do →",
     linkPage: "xp",
     cards: [
-      { kicker: "Day One", title: "Walk into the thunder", image: "/assets/br-explore-rainbow.jpg", imageAlt: "The rainforest trail", page: "falls" },
-      { kicker: "Day Two", title: "See it from the sky", image: "/assets/br-explore-flight.jpg", imageAlt: "Flight of Angels", page: "xp" },
-      { kicker: "Day Three", title: "Cross into Botswana", image: "/assets/ch-eleph-portrait.jpg", imageAlt: "Chobe elephants", page: "beyond" },
-      { kicker: "Day Four", title: "Eat by firelight", image: "/assets/br-boma-drummer.jpg", imageAlt: "The Boma dinner", page: "xp" }
+      { kicker: "Day One", title: "Walk the rainforest trail", image: "/assets/br-explore-rainbow.jpg", imageAlt: "The rainforest trail", page: "falls" },
+      { kicker: "Day Two", title: "Fly over the Falls", image: "/assets/br-explore-flight.jpg", imageAlt: "Flight of Angels", page: "xp" },
+      { kicker: "Day Three", title: "Chobe day trip, Botswana", image: "/assets/ch-eleph-portrait.jpg", imageAlt: "Chobe elephants", page: "beyond" },
+      { kicker: "Day Four", title: "Boma dinner by the fire", image: "/assets/br-boma-drummer.jpg", imageAlt: "The Boma dinner", page: "xp" }
     ]
   },
   tunya: {
     image: "/assets/br-tunya-site.jpg",
-    imageAlt: "Tunya, the conversational travel assistant",
-    kicker: "Meet Tunya",
-    title: "Africa's first conversational travel assistant.",
-    body: "Ask a question, book a room, move a transfer, add a bungee at two in the morning. Tunya knows every lodge, every activity, every border rule — and never sleeps.",
-    cta: { label: "Talk to Tunya", href: TUNYA_URL }
+    imageAlt: "Ask Tunya, our trip-planning assistant",
+    kicker: "Ask Tunya",
+    title: "Plan at any hour. We take it from there.",
+    body: "Ask Tunya is our trip-planning assistant. Ask about activities, lodges, transfers or border rules at two in the morning and get an answer straight away. Then one of us picks it up, checks every detail and confirms your booking.",
+    cta: { label: "Ask Tunya", href: TUNYA_URL }
   },
   beyondTeaser: {
     kicker: "Beyond the Falls",
-    title: "The Falls are the door. Africa is the house.",
+    title: "From Victoria Falls to Botswana and beyond.",
     cards: [
       { title: "South Africa", image: "/assets/w-capetown.jpg", imageAlt: "South Africa", page: "beyond" },
       { title: "Botswana", image: "/assets/w-lions.jpg", imageAlt: "Botswana", page: "beyond" },
       { title: "Namibia", image: "/assets/w-island.jpg", imageAlt: "Namibia", page: "beyond" }
     ],
-    cta: { label: "Explore the Continent", page: "beyond" }
+    cta: { label: "See Destinations", page: "beyond" }
   }
 };

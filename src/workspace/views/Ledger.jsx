@@ -4,7 +4,7 @@ import { uid, nextRef } from "../lib/ids.js";
 import { guestMailDraft, OFFICE_FROM, sendWorkspaceMail } from "../lib/notify.js";
 import { documentHtml, downloadPdf, openPrint, pdfForMail, totalsOf } from "../lib/printDoc.js";
 import { todayISO } from "../lib/time.js";
-import { useWorkspace, workspaceKey } from "../store.jsx";
+import { useWorkspace } from "../store.jsx";
 import { Button, Empty, Field, Kicker, Modal, Money, PageHead } from "../ui.jsx";
 import Books from "./Books.jsx";
 
@@ -198,8 +198,7 @@ export default function Ledger() {
         subject: mail.subject.trim(),
         message: mail.message.trim(),
         pdfBase64,
-        pdfName,
-        key: workspaceKey()
+        pdfName
       });
       const collection = mail.kind === "invoice" ? "invoices" : "quotes";
       if (mail.row.id) {

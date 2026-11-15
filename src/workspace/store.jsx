@@ -3,39 +3,38 @@ import { CLOUD_FILE_MAX, mergeWorkspacePacks, packHasRecords, pullWorkspace, pus
 import { exportBackup, fileDelete, fileGet, fileListMeta, filePut, importBackup, kvGet, kvSet } from "./lib/db.js";
 import { uid } from "./lib/ids.js";
 import { seedIfEmpty, DEFAULT_CREW, DEFAULT_SETTINGS } from "./data/seed.js";
+import { SIGNIN_REQUIRED_EVENT, adminLogin, adminLogout, adminMe } from "../lib/adminSession.js";
 
 const LISTS = ["crew", "tasks", "quotes", "invoices", "cashbook", "loans", "journeys", "movements", "visaCases", "briefs", "notices"];
 const CHANNEL = "tunyafrika-workspace";
 
 const WorkspaceContext = createContext(null);
 
-function readSession() {
+function clearLegacySession() {
+  // Older builds kept a client-side "signed in" flag. The server session is the only truth now.
   try {
-    return JSON.parse(sessionStorage.getItem("tunya-desk") || localStorage.getItem("tunya-desk") || "null");
-  } catch {
-    return null;
-  }
+    sessionStorage.removeItem("tunya-desk");
+    localStorage.removeItem("tunya-desk");
+  } catch { /* ignore */ }
 }
 
-function writeSession(session, persist) {
-  const raw = JSON.stringify(session);
-  sessionStorage.setItem("tunya-desk", raw);
-  if (persist) localStorage.setItem("tunya-desk", raw);
-  else localStorage.removeItem("tunya-desk");
+function sessionFromUser(user) {
+  if (!user?.id) return null;
+  const crew = DEFAULT_CREW.find((c) => c.id === user.id);
+  return { crewId: user.id, name: user.name || crew?.name || user.id, initials: crew?.initials || "", at: Date.now() };
 }
 
 function ping() {
   try { new BroadcastChannel(CHANNEL).postMessage("refresh"); } catch { /* ignore */ }
 }
 
-export function workspaceKey() {
-  return import.meta.env.VITE_WORKSPACE_KEY || "123456";
-}
-
 export function WorkspaceProvider({ children }) {
   const [ready, setReady] = useState(false);
   const [data, setData] = useState({ settings: {}, files: [] });
-  const [session, setSession] = useState(readSession);
+  const [session, setSession] = useState(null);
+  const [authChecked, setAuthChecked] = useState(false);
+  // True once the shared records have been loaded for the signed-in person.
+  const [dataLoaded, setDataLoaded] = useState(false);
   const [toasts, setToasts] = useState([]);
   const [sync, setSync] = useState({ status: "idle", at: 0, error: "" });
   const cloudLock = useRef(Promise.resolve());
@@ -57,14 +56,6 @@ export function WorkspaceProvider({ children }) {
     if (!next.crew?.length) next.crew = DEFAULT_CREW;
     next.files = await fileListMeta();
     setData(next);
-    setSession((current) => {
-      if (!current?.crewId) return current;
-      const stillThere = (next.crew || []).some((c) => c.id === current.crewId);
-      if (stillThere) return current;
-      sessionStorage.removeItem("tunya-desk");
-      localStorage.removeItem("tunya-desk");
-      return null;
-    });
     return next;
   }, []);
 
@@ -163,24 +154,58 @@ export function WorkspaceProvider({ children }) {
       });
     } finally {
       setReady(true);
+      setDataLoaded(true);
     }
   }, [applyCloudPack, hydrate, runCloud]);
 
-  useEffect(() => { load(); }, [load]);
+  // Ask the server who is signed in. Nothing is pulled from the shared workspace until it says yes.
+  useEffect(() => {
+    clearLegacySession();
+    let cancelled = false;
+    adminMe().then((user) => {
+      if (cancelled) return;
+      setSession(sessionFromUser(user));
+      setAuthChecked(true);
+    });
+    return () => { cancelled = true; };
+  }, []);
 
   useEffect(() => {
+    if (!authChecked) return;
+    if (session) {
+      setReady(false);
+      load();
+    } else {
+      setData((d) => ({ ...d, crew: DEFAULT_CREW }));
+      setReady(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authChecked, session?.crewId]);
+
+  useEffect(() => {
+    const onExpired = () => {
+      setDataLoaded(false);
+      setSession(null);
+    };
+    window.addEventListener(SIGNIN_REQUIRED_EVENT, onExpired);
+    return () => window.removeEventListener(SIGNIN_REQUIRED_EVENT, onExpired);
+  }, []);
+
+  useEffect(() => {
+    if (!session) return undefined;
     const ch = new BroadcastChannel(CHANNEL);
     ch.onmessage = () => load();
     return () => ch.close();
-  }, [load]);
+  }, [load, session]);
 
   useEffect(() => {
+    if (!session) return undefined;
     const onVis = () => {
       if (document.visibilityState === "visible") load();
     };
     document.addEventListener("visibilitychange", onVis);
     return () => document.removeEventListener("visibilitychange", onVis);
-  }, [load]);
+  }, [load, session]);
 
   const persist = useCallback(async (key, value) => {
     const next = key === "settings" ? { ...value, updatedAt: Date.now() } : value;
@@ -277,17 +302,14 @@ export function WorkspaceProvider({ children }) {
     return { ...rec, url: URL.createObjectURL(rec.blob) };
   }, []);
 
-  const signIn = useCallback((crewId, persistDesk) => {
-    const crew = (data.crew || []).find((c) => c.id === crewId);
-    if (!crew) return;
-    const next = { crewId: crew.id, name: crew.name, initials: crew.initials, at: Date.now() };
-    writeSession(next, persistDesk);
-    setSession(next);
-  }, [data.crew]);
+  const signIn = useCallback(async (crewId, password, persistDesk) => {
+    const user = await adminLogin(crewId, password, persistDesk);
+    setSession(sessionFromUser(user));
+  }, []);
 
-  const signOut = useCallback(() => {
-    sessionStorage.removeItem("tunya-desk");
-    localStorage.removeItem("tunya-desk");
+  const signOut = useCallback(async () => {
+    await adminLogout();
+    setDataLoaded(false);
     setSession(null);
   }, []);
 
@@ -316,7 +338,7 @@ export function WorkspaceProvider({ children }) {
   );
 
   const value = {
-    ready,
+    ready: ready && (!session || dataLoaded),
     ...data,
     you,
     session,

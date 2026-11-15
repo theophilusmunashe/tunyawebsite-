@@ -1,4 +1,5 @@
 import { totalsOf } from "./printDoc.js";
+import { adminFetch } from "../../lib/adminSession.js";
 
 export const OFFICE_FROM = "operations@tunyafrika.com";
 
@@ -53,11 +54,7 @@ export function guestMailDraft({ kind, doc, settings, you }) {
 }
 
 async function postMail(url, payload) {
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Accept: "application/json" },
-    body: JSON.stringify(payload)
-  });
+  const res = await adminFetch(url, { method: "POST", body: payload });
   const data = await res.json().catch(() => ({}));
   if (!res.ok || data.ok !== true) {
     const missing = data.ok !== true && !data.error;
@@ -94,9 +91,8 @@ async function sendEmailJs({ to, toName, subject, message }) {
   return res.ok;
 }
 
-export async function sendWorkspaceMail({ to, toName, subject, message, pdfBase64, pdfName, key }) {
+export async function sendWorkspaceMail({ to, toName, subject, message, pdfBase64, pdfName }) {
   const payload = {
-    key: key || import.meta.env.VITE_MAIL_KEY || "",
     to,
     toName: toName || "",
     subject,
@@ -106,7 +102,7 @@ export async function sendWorkspaceMail({ to, toName, subject, message, pdfBase6
     pdfBase64: pdfBase64 || ""
   };
 
-  const endpoint = import.meta.env.VITE_MAIL_URL || "/api/send-mail.php";
+  const endpoint = "/api/send-mail.php";
   try {
     await postMail(endpoint, payload);
     return { emailed: true };

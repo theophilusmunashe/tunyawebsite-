@@ -1,8 +1,6 @@
-const ENDPOINT = "/api/accomodations.php";
+import { adminFetch } from "../lib/adminSession.js";
 
-function workspaceKey() {
-  return import.meta.env.VITE_MAIL_KEY || import.meta.env.VITE_WORKSPACE_KEY || "123456";
-}
+const ENDPOINT = "/api/accomodations.php";
 
 async function parse(res) {
   const data = await res.json().catch(() => ({}));
@@ -39,17 +37,7 @@ export async function submitEnquiry(payload) {
 }
 
 async function adminPost(action, payload = {}) {
-  const key = workspaceKey();
-  const res = await fetch(ENDPOINT, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-      "X-Tunya-Key": key
-    },
-    body: JSON.stringify({ action, key, ...payload })
-  });
-  return parse(res);
+  return parse(await adminFetch(ENDPOINT, { method: "POST", body: { action, ...payload } }));
 }
 
 export async function adminBootstrap() {

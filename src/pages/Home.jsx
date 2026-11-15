@@ -1,5 +1,6 @@
 import { useContent } from "../content/ContentProvider.jsx";
 import { imageSrc } from "../lib/sanity.js";
+import HeroVideo from "../components/HeroVideo.jsx";
 
 const kickerStyle = {fontSize: "12px", fontWeight: "500", letterSpacing: "0.42em", textTransform: "uppercase", color: "#b3955c"};
 const headingStyle = {fontFamily: "'Cormorant Garamond', serif", fontWeight: "500", fontSize: "54px", lineHeight: "1.1", margin: "18px 0 0"};
@@ -12,7 +13,7 @@ export default function Home({ go }) {
   return (
     <div data-screen-label="Home">
           <div style={{position: "relative", height: "92vh", minHeight: "700px", background: "#04301f", overflow: "hidden"}}>
-            <img src={imageSrc(hero.image)} alt={hero.imageAlt} style={coverStyle} />
+            <HeroVideo video={hero.video} fallbackImage={imageSrc(hero.image)} alt={hero.imageAlt} />
             <div style={{position: "absolute", inset: "0", background: "linear-gradient(180deg, rgba(4,48,31,0.55) 0%, rgba(4,48,31,0.1) 35%, rgba(4,48,31,0.82) 78%, rgba(4,48,31,0.96) 100%)"}}></div>
             <div className="site-hero-copy">
               <h1 style={{fontFamily: "'Cormorant Garamond', serif", fontWeight: "500", fontSize: "86px", lineHeight: "1.02", color: "#faf3e8", margin: "0 auto", maxWidth: "16ch", textWrap: "pretty"}}>{hero.title || <>{hero.titleLead}<em style={{color: "#b3955c"}}>{hero.titleAccent}</em></>}</h1>

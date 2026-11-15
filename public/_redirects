@@ -1,2 +1,11 @@
-/admin/*    /index.html   200
-/*          /index.html   200
+# Netlify. Pages are pre-rendered (/victoria-falls → victoria-falls.html) and 404.html is used for unknown URLs.
+/index.html          /                 301!
+/tour.html           /things-to-do     301!
+/destination.html    /where-to-stay    301!
+/contact.html        /plan-my-trip     301!
+/shop.html           /                 301!
+/events.html         /                 301!
+/africaisdigital.html /                301!
+/admin               /spa.html         200
+/admin/*             /spa.html         200
+/accomodations/*     /spa.html         200

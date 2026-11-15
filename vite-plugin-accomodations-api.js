@@ -1,3 +1,4 @@
+import { requireDevAdmin } from "./vite-dev-auth.js";
 import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
@@ -8,7 +9,6 @@ const root = path.resolve(__dirname);
 const dataDir = path.join(root, "public/api/accomodations-data");
 const storeFile = path.join(dataDir, "store.json");
 const mediaDir = path.join(root, "public/accomodations-media");
-const EXPECTED_KEY = process.env.TUNYA_MAIL_KEY || process.env.VITE_WORKSPACE_KEY || "123456";
 
 function emptyStore() {
   return { providers: [], listings: [], enquiries: [], updatedAt: 0 };
@@ -92,13 +92,8 @@ function send(res, code, payload) {
   res.end(JSON.stringify(payload));
 }
 
-function requireAdmin(req, body) {
-  const key = req.headers["x-tunya-key"] || body.key || "";
-  if (key !== EXPECTED_KEY) {
-    const err = new Error("Not authorised.");
-    err.status = 403;
-    throw err;
-  }
+function requireAdmin(req) {
+  return requireDevAdmin(req);
 }
 
 async function handle(req, res) {

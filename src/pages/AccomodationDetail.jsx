@@ -151,12 +151,12 @@ export default function AccomodationDetail() {
 
             <div className="acc-enquire">
               <div className="acc-kicker">Availability</div>
-              <h2>Enquire availability</h2>
-              <p>Tell us your dates. Our team will check with the property and reply — exact location and supplier details stay with Tunyafrika.</p>
+              <h2>Check availability</h2>
+              <p>Tell us your dates. We'll check with the property and get back to you.</p>
 
               {sent ? (
                 <div className="acc-sent">
-                  Received. We will confirm availability and get back to you shortly.
+                  Got it. One of us will check availability and reply soon.
                 </div>
               ) : (
                 <form className="acc-form" onSubmit={send}>
@@ -194,7 +194,7 @@ export default function AccomodationDetail() {
                   </label>
                   {formError && <div className="acc-form-error">{formError}</div>}
                   <button type="submit" className="acc-cta" disabled={sending}>
-                    {sending ? "Sending…" : "Enquire availability"}
+                    {sending ? "Sending…" : "Check availability"}
                   </button>
                 </form>
               )}

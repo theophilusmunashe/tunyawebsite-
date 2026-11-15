@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { publicListings } from "../accomodations/api.js";
 import { priceLabel } from "../accomodations/model.js";
+import { applyHead, headFor } from "../seo/meta.js";
 
 export default function AccomodationsGallery() {
   const [listings, setListings] = useState([]);
@@ -24,9 +25,7 @@ export default function AccomodationsGallery() {
   }, []);
 
   useEffect(() => {
-    const prev = document.title;
-    document.title = "Accommodations — Tunyafrika Xperiences";
-    return () => { document.title = prev; };
+    applyHead(headFor("accomodations"));
   }, []);
 
   return (
@@ -34,8 +33,8 @@ export default function AccomodationsGallery() {
       <section className="acc-hero">
         <div className="acc-hero-copy">
           <div className="acc-kicker">Victoria Falls stays</div>
-          <h1>Accommodation gallery</h1>
-          <p>Hand-picked lodges, hotels and guesthouses. Browse the look and the rate, then ask us to confirm availability for your dates.</p>
+          <h1>Victoria Falls lodges &amp; hotels</h1>
+          <p>Lodges, hotels and guesthouses in Victoria Falls that we know well. See the photos and rates, then ask us to check your dates.</p>
         </div>
       </section>
 
@@ -43,7 +42,7 @@ export default function AccomodationsGallery() {
         {loading && <div className="acc-empty">Loading stays…</div>}
         {!loading && error && <div className="acc-empty">{error}</div>}
         {!loading && !error && listings.length === 0 && (
-          <div className="acc-empty">Published stays will appear here once the team adds them in the workspace.</div>
+          <div className="acc-empty">We're adding places to stay. Message us on WhatsApp on +263 78 266 9251 and we'll send you options.</div>
         )}
 
         <div className="acc-grid">

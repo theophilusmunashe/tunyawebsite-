@@ -3,18 +3,10 @@
  * Tunyafrika content engine — Africa tourism headlines for admin review.
  * Stores only headline + short summary + source link (no full articles).
  */
-header("Content-Type: application/json; charset=utf-8");
-header("X-Content-Type-Options: nosniff");
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type, X-Tunya-Key");
+require __DIR__ . "/_lib/security.php";
+tunya_api_headers(true);
+tunya_require_same_origin_post();
 
-if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") {
-  http_response_code(204);
-  exit;
-}
-
-$EXPECTED_KEY = getenv("TUNYA_MAIL_KEY") ?: (getenv("TUNYA_WORKSPACE_KEY") ?: "123456");
 $DATA_DIR = __DIR__ . "/content-data";
 $STORE_FILE = $DATA_DIR . "/store.json";
 
@@ -74,17 +66,8 @@ function uid($prefix) {
   return $prefix . "_" . bin2hex(random_bytes(6));
 }
 
-function request_key() {
-  return (string)($_SERVER["HTTP_X_TUNYA_KEY"] ?? "");
-}
-
-function require_admin($expected) {
-  global $body;
-  $key = request_key();
-  if ($key === "" && is_array($body)) $key = (string)($body["key"] ?? "");
-  if (!hash_equals($expected, $key)) {
-    respond(403, ["ok" => false, "error" => "Not authorised."]);
-  }
+function require_admin($unused = null) {
+  tunya_require_admin();
 }
 
 function find_by_id($list, $id) {
@@ -113,12 +96,28 @@ function http_get($url, $asBrowser = false) {
   $accept = $asBrowser
     ? "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
     : "application/rss+xml, application/xml, text/xml, text/html;q=0.9, */*;q=0.8";
+  // Follow redirects by hand so every hop is checked against private/internal addresses (SSRF).
+  for ($hop = 0; $hop < 6; $hop++) {
+    if (!tunya_is_public_url($url)) return null;
+    [$body, $code, $next] = http_get_once($url, $ua, $accept);
+    if ($next && $code >= 300 && $code < 400) {
+      $url = $next;
+      continue;
+    }
+    if ($body === null || $code >= 400) return null;
+    return $body;
+  }
+  return null;
+}
+
+function http_get_once($url, $ua, $accept) {
   if (function_exists("curl_init")) {
     $ch = curl_init($url);
     curl_setopt_array($ch, [
       CURLOPT_RETURNTRANSFER => true,
-      CURLOPT_FOLLOWLOCATION => true,
-      CURLOPT_MAXREDIRS => 8,
+      CURLOPT_FOLLOWLOCATION => false,
+      CURLOPT_PROTOCOLS => CURLPROTO_HTTP | CURLPROTO_HTTPS,
+      CURLOPT_MAXFILESIZE => 5 * 1024 * 1024,
       CURLOPT_TIMEOUT => 25,
       CURLOPT_CONNECTTIMEOUT => 12,
       CURLOPT_ENCODING => "",
@@ -131,19 +130,19 @@ function http_get($url, $asBrowser = false) {
     ]);
     $body = curl_exec($ch);
     $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $next = (string)curl_getinfo($ch, CURLINFO_REDIRECT_URL);
     curl_close($ch);
-    if ($body === false || $code >= 400) return null;
-    return $body;
+    return [$body === false ? null : $body, $code, $next];
   }
   $ctx = stream_context_create([
     "http" => [
       "timeout" => 25,
-      "follow_location" => 1,
+      "follow_location" => 0,
       "header" => "User-Agent: {$ua}\r\nAccept: {$accept}\r\nAccept-Language: en-US,en;q=0.9\r\n"
     ]
   ]);
   $body = @file_get_contents($url, false, $ctx);
-  return $body === false ? null : $body;
+  return [$body === false ? null : $body, $body === false ? 0 : 200, ""];
 }
 
 function strip_text($html) {
@@ -373,7 +372,7 @@ switch ($action) {
   }
 
   case "admin_bootstrap": {
-    require_admin($EXPECTED_KEY);
+    require_admin();
     respond(200, [
       "ok" => true,
       "items" => $store["items"],
@@ -383,7 +382,7 @@ switch ($action) {
   }
 
   case "fetch_updates": {
-    require_admin($EXPECTED_KEY);
+    require_admin();
     $sources = default_sources();
     $existingKeys = [];
     foreach ($store["items"] as $item) {
@@ -446,7 +445,7 @@ switch ($action) {
   }
 
   case "import_url": {
-    require_admin($EXPECTED_KEY);
+    require_admin();
     $url = trim((string)($body["url"] ?? ""));
     if (!filter_var($url, FILTER_VALIDATE_URL)) {
       respond(400, ["ok" => false, "error" => "Enter a valid article URL."]);
@@ -474,7 +473,7 @@ switch ($action) {
   }
 
   case "save_item": {
-    require_admin($EXPECTED_KEY);
+    require_admin();
     $item = $body["item"] ?? null;
     if (!is_array($item) || empty($item["id"])) respond(400, ["ok" => false, "error" => "Missing update."]);
     [$idx, $existing] = find_by_id($store["items"], $item["id"]);
@@ -504,7 +503,7 @@ switch ($action) {
   }
 
   case "delete_item": {
-    require_admin($EXPECTED_KEY);
+    require_admin();
     $id = trim((string)($body["id"] ?? ""));
     $store["items"] = array_values(array_filter($store["items"], function ($row) use ($id) {
       return ($row["id"] ?? "") !== $id;

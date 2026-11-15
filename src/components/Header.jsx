@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useContent } from "../content/ContentProvider.jsx";
 import { imageSrc } from "../lib/sanity.js";
+import { linkClick, pathFor } from "../routes.js";
 
 const HINT_KEY = "tunya-saw-menu-hint";
 
@@ -39,7 +40,7 @@ export default function Header({ go, page }) {
         window.open(next.href, "_blank", "noopener");
         return;
       }
-      window.location.assign(next.href);
+      go(next.href);
       return;
     }
     go(next);
@@ -90,18 +91,18 @@ export default function Header({ go, page }) {
             </button>
             {showHint && !navOpen && (
               <div className="site-nav-hint" role="status">
-                <p>Open the menu for every Tunyafrika page.</p>
+                <p>Visas, destinations and our team are in the menu.</p>
                 <button type="button" className="site-nav-hint-ok" onClick={dismissHint}>Got it</button>
               </div>
             )}
           </div>
         </div>
 
-        <div className="site-header-brand" onClick={() => visit("home")}>
+        <a className="site-header-brand" href="/" aria-label="Tunyafrika Xperiences home" onClick={linkClick(visit, "home")} style={{ color: "inherit", textDecoration: "none" }}>
           <span className="site-logo-frame">
             <img className="site-logo" src={imageSrc(site.logo, "/assets/logo-cream.png")} alt={site.logoAlt} />
           </span>
-        </div>
+        </a>
 
         <div className="site-header-side site-header-side-end">
           <a className="x12 site-header-cta" href={nav.cta.href} target="_blank" rel="noopener">{nav.cta.label}</a>
@@ -111,11 +112,11 @@ export default function Header({ go, page }) {
       {navOpen && (
         <div className="site-mobile-nav">
           {nav.primary.map((item) => (
-            <div key={item.label} className="x11" onClick={() => visit(itemTarget(item))}>{item.label}</div>
+            <a key={item.label} className="x11" href={item.href || pathFor(item.page)} onClick={linkClick(visit, itemTarget(item))}>{item.label}</a>
           ))}
           <div className="site-mobile-label">{nav.menuLabel}</div>
           {nav.menu.map((item) => (
-            <div key={item.label} className="x11 site-mobile-sub" onClick={() => visit(itemTarget(item))}>{item.label}</div>
+            <a key={item.label} className="x11 site-mobile-sub" href={item.href || pathFor(item.page)} onClick={linkClick(visit, itemTarget(item))}>{item.label}</a>
           ))}
           <a className="x11" href={nav.meetTunya.href} target="_blank" rel="noopener">{nav.meetTunya.label}</a>
           <a className="x12 site-mobile-cta" href={nav.cta.href} target="_blank" rel="noopener">{nav.cta.label}</a>

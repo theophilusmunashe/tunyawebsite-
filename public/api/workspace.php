@@ -4,18 +4,10 @@
  * Quotes, invoices, cash book, loans, bookings, and files sync here
  * so every signed-in machine reads the same records.
  */
-header("Content-Type: application/json; charset=utf-8");
-header("X-Content-Type-Options: nosniff");
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type, X-Tunya-Key");
+require __DIR__ . "/_lib/security.php";
+tunya_api_headers();
+tunya_require_same_origin_post();
 
-if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") {
-  http_response_code(204);
-  exit;
-}
-
-$EXPECTED_KEY = getenv("TUNYA_MAIL_KEY") ?: (getenv("TUNYA_WORKSPACE_KEY") ?: "123456");
 $DATA_DIR = __DIR__ . "/workspace-data";
 $STORE_FILE = $DATA_DIR . "/store.json";
 
@@ -76,19 +68,6 @@ function save_store($file, $store) {
   }
 }
 
-function request_key($body) {
-  $hdr = $_SERVER["HTTP_X_TUNYA_KEY"] ?? "";
-  if ($hdr !== "") return (string)$hdr;
-  if (is_array($body) && isset($body["key"])) return (string)$body["key"];
-  return (string)($_GET["key"] ?? "");
-}
-
-function require_admin($expected, $body) {
-  if (!hash_equals((string)$expected, request_key($body))) {
-    respond(403, ["ok" => false, "error" => "Not authorised."]);
-  }
-}
-
 $method = $_SERVER["REQUEST_METHOD"] ?? "GET";
 $raw = file_get_contents("php://input");
 $body = json_decode($raw ?: "{}", true);
@@ -103,7 +82,7 @@ if ($method === "GET") {
   respond(405, ["ok" => false, "error" => "Use GET or POST."]);
 }
 
-require_admin($EXPECTED_KEY, $body);
+tunya_require_admin();
 $store = load_store($STORE_FILE);
 
 if ($action === "pull") {

@@ -1,5 +1,7 @@
-const RELATIVE_ENDPOINT = "/api/workspace.php";
-const LIVE_ENDPOINT = "https://www.tunyafrika.com/api/workspace.php";
+import { adminFetch } from "../../lib/adminSession.js";
+
+// Admin data only ever travels same-origin to the live cPanel API (or the local Vite stand-in).
+const ENDPOINT = "/api/workspace.php";
 export const CLOUD_FILE_MAX = 6 * 1024 * 1024;
 
 const LIST_KEYS = [
@@ -15,35 +17,6 @@ const LIST_KEYS = [
   "briefs",
   "notices"
 ];
-
-function canRunPhpApi(hostname = "") {
-  const host = String(hostname || "").toLowerCase();
-  if (!host || host === "localhost" || host === "127.0.0.1" || host.endsWith(".local")) return true;
-  if (host === "www.tunyafrika.com" || host === "tunyafrika.com") return true;
-  return false;
-}
-
-function isStaticPreviewHost(hostname = typeof window !== "undefined" ? window.location.hostname : "") {
-  const host = String(hostname || "").toLowerCase();
-  if (!host) return false;
-  return (
-    host.endsWith(".vercel.app") ||
-    host.endsWith(".netlify.app") ||
-    host.endsWith(".netlify.com") ||
-    host.includes("vercel") ||
-    host.includes("netlify")
-  );
-}
-
-export function workspaceCloudEndpoint() {
-  const override = import.meta.env.VITE_WORKSPACE_API_URL;
-  if (override) return String(override).replace(/\/$/, "");
-  if (typeof window === "undefined") return RELATIVE_ENDPOINT;
-  const host = window.location.hostname;
-  if (canRunPhpApi(host)) return RELATIVE_ENDPOINT;
-  if (isStaticPreviewHost(host)) return LIVE_ENDPOINT;
-  return LIVE_ENDPOINT;
-}
 
 function httpErrorMessage(status, data = {}) {
   if (data.error) return data.error;
@@ -64,25 +37,8 @@ async function parse(res) {
   return data;
 }
 
-function cloudKey() {
-  return import.meta.env.VITE_MAIL_KEY || import.meta.env.VITE_WORKSPACE_KEY || "123456";
-}
-
 async function post(action, payload = {}) {
-  const key = cloudKey();
-  const body = JSON.stringify({ action, key, ...payload });
-  const headers = {
-    "Content-Type": "application/json",
-    Accept: "application/json",
-    "X-Tunya-Key": key
-  };
-  let endpoint = workspaceCloudEndpoint();
-  let res = await fetch(endpoint, { method: "POST", headers, body });
-  if ((res.status === 405 || res.status === 404) && endpoint !== LIVE_ENDPOINT) {
-    endpoint = LIVE_ENDPOINT;
-    res = await fetch(endpoint, { method: "POST", headers, body });
-  }
-  return parse(res);
+  return parse(await adminFetch(ENDPOINT, { method: "POST", body: { action, ...payload } }));
 }
 
 export async function pullWorkspace() {

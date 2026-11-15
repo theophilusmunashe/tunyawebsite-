@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import Header from "./components/Header.jsx";
 import Footer from "./components/Footer.jsx";
 import SocialConnect from "./components/SocialConnect.jsx";
@@ -13,6 +13,10 @@ import About from "./pages/About.jsx";
 import Socials from "./pages/Socials.jsx";
 import MeetTunya from "./pages/MeetTunya.jsx";
 import PlanMyTrip from "./pages/PlanMyTrip.jsx";
+import NotFound from "./pages/NotFound.jsx";
+import { makeGo, pageForPath } from "./routes.js";
+import { useContent } from "./content/ContentProvider.jsx";
+import { applyHead, headFor } from "./seo/meta.js";
 
 const PAGES = {
   home: Home,
@@ -24,47 +28,30 @@ const PAGES = {
   about: About,
   social: Socials,
   ai: MeetTunya,
-  plan: PlanMyTrip
+  plan: PlanMyTrip,
+  notFound: NotFound
 };
 
 export default function App() {
   const navigate = useNavigate();
-  const [page, setPage] = useState("home");
+  const { pathname } = useLocation();
+  const content = useContent();
+  const page = pageForPath(pathname);
+  const go = makeGo(navigate);
 
+  // Keep <head> in step with the page after client-side navigation.
   useEffect(() => {
-    try {
-      const next = sessionStorage.getItem("tunya-go-page");
-      if (next && PAGES[next]) {
-        sessionStorage.removeItem("tunya-go-page");
-        setPage(next);
-        window.scrollTo({ top: 0, behavior: "auto" });
-      }
-    } catch {
-      /* ignore */
-    }
-  }, []);
+    applyHead(headFor(page, { content }));
+  }, [page, content]);
 
-  const go = (next) => {
-    if (next === "accomodations" || next === "/accomodations") {
-      navigate("/accomodations");
-      window.scrollTo({ top: 0, behavior: "auto" });
-      return;
-    }
-    if (next === "content" || next === "/content") {
-      navigate("/content");
-      window.scrollTo({ top: 0, behavior: "auto" });
-      return;
-    }
-    setPage(next);
-    window.scrollTo({ top: 0, behavior: "auto" });
-  };
-
-  const Current = PAGES[page] || Home;
+  const Current = PAGES[page] || NotFound;
 
   return (
     <div className="site-root" style={{ fontFamily: "'Poppins', sans-serif", color: "#0d2b1e", background: "#faf3e8", minHeight: "100vh" }}>
       <Header go={go} page={page} />
-      <Current go={go} />
+      <main id="main">
+        <Current go={go} />
+      </main>
       <Footer go={go} />
       <SocialConnect />
     </div>

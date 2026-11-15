@@ -1,11 +1,7 @@
 <?php
-header("Content-Type: application/json; charset=utf-8");
-header("X-Content-Type-Options: nosniff");
-
-if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") {
-  http_response_code(204);
-  exit;
-}
+require __DIR__ . "/_lib/security.php";
+tunya_api_headers();
+tunya_require_same_origin_post();
 
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
   http_response_code(405);
@@ -20,6 +16,8 @@ if (!is_array($data)) {
   echo json_encode(["ok" => false, "error" => "Invalid request."]);
   exit;
 }
+
+tunya_rate_limit_or_fail("book:" . tunya_client_ip(), 5, 3600, "You've sent several requests already. Please WhatsApp us on +263 78 266 9251 and we'll reply directly.");
 
 // Honeypot — bots fill hidden "website" fields.
 if (trim((string)($data["website"] ?? "")) !== "") {
