@@ -1,8 +1,10 @@
 import { useContent } from "../content/ContentProvider.jsx";
 import { imageSrc } from "../lib/sanity.js";
+import { linkClick, pathFor } from "../routes.js";
+import { TUNYA_URL } from "../content/defaults/site.js";
 
 const headingStyle = {fontSize: "11px", fontWeight: "500", letterSpacing: "0.28em", textTransform: "uppercase", color: "#b3955c"};
-const linkStyle = {cursor: "pointer", fontSize: "15px", fontWeight: "300", color: "rgba(250,243,232,0.85)"};
+const linkStyle = {cursor: "pointer", fontSize: "15px", fontWeight: "300", color: "rgba(250,243,232,0.85)", textDecoration: "none"};
 
 const ICONS = {
   facebook: <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 21v-7.5h2.5l.5-3h-3V8.6c0-.9.3-1.5 1.6-1.5H16.6V4.4c-.3 0-1.2-.1-2.3-.1-2.3 0-3.8 1.4-3.8 3.9v2.3H8v3h2.5V21h3z"></path></svg>,
@@ -30,14 +32,15 @@ export default function Footer({ go }) {
             <div style={headingStyle}>{f.exploreHeading}</div>
             <div style={{display: "grid", gap: "10px", marginTop: "16px"}}>
               {f.explore.map((item) => (
-                <div
+                <a
                   key={item.label}
                   className="x3"
-                  onClick={() => (item.href ? window.location.assign(item.href) : go(item.page))}
+                  href={item.href || pathFor(item.page)}
+                  onClick={linkClick(go, item.href || item.page)}
                   style={linkStyle}
                 >
                   {item.label}
-                </div>
+                </a>
               ))}
             </div>
           </div>
@@ -45,16 +48,16 @@ export default function Footer({ go }) {
             <div style={headingStyle}>{f.bookHeading}</div>
             <div style={{display: "grid", gap: "10px", marginTop: "16px"}}>
               {f.book.map((item) => (
-                <div key={item.label} className="x3" onClick={() => go(item.page)} style={linkStyle}>{item.label}</div>
+                <a key={item.label} className="x3" href={pathFor(item.page)} onClick={linkClick(go, item.page)} style={linkStyle}>{item.label}</a>
               ))}
-              <div style={{fontSize: "15px", fontWeight: "300", color: "rgba(250,243,232,0.85)"}}>{f.bookNote}</div>
+              <a href={TUNYA_URL} target="_blank" rel="noopener" style={{fontSize: "15px", fontWeight: "300", color: "rgba(250,243,232,0.85)", textDecoration: "none"}}>{f.bookNote}</a>
             </div>
           </div>
           <div>
             <div style={headingStyle}>{f.contactHeading}</div>
             <div style={{display: "grid", gap: "10px", marginTop: "16px", fontSize: "15px", fontWeight: "300", color: "rgba(250,243,232,0.85)"}}>
-              <div>{f.phone}</div>
-              <div>{f.email}</div>
+              <a href={"tel:" + f.phone.replace(/\s+/g, "")} style={{color: "inherit", textDecoration: "none"}}>{f.phone}</a>
+              <a href={"mailto:" + f.email} style={{color: "inherit", textDecoration: "none"}}>{f.email}</a>
               <div style={{lineHeight: "1.6"}}>{f.addressLine1}<br />{f.addressLine2}</div>
             </div>
             <div style={{display: "flex", alignItems: "center", gap: "16px", marginTop: "20px", color: "rgba(250,243,232,0.8)"}}>

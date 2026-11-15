@@ -11,7 +11,7 @@ Plug and play: unzip, install, run.
 You need **Node.js 18 or newer** ([nodejs.org](https://nodejs.org)).
 
 ```bash
-cd tunyafrika-react
+cd tunyawebsite-
 npm install
 npm run dev
 ```
@@ -93,42 +93,68 @@ No CSS framework, no UI kit, no icon package. All icons are hand-written inline 
 
 ## 3. How the pages work
 
-`App.jsx` keeps the current page in React state and renders the matching component. Every nav item, footer link and CTA calls `go("pageKey")`, which switches the page and scrolls to the top.
+Every page has its own URL (`src/routes.js`). `App.jsx` reads the URL and renders the matching component; `go("pageKey")` navigates to that page's URL. Header and footer links are real `<a href>` links so search engines can follow them.
 
-| Key | Component | Page |
-|---|---|---|
-| `home` | `Home.jsx` | Hero, the Tunyafrika way, four-day strip, Tunya feature, Beyond teaser |
-| `falls` | `VictoriaFalls.jsx` | The wonder, season guide, gallery, know-before-you-go |
-| `xp` | `Xperiences.jsx` | Activities, the Boma Dinner, six Flagship Xperiences |
-| `stays` | `Stays.jsx` | Accommodation types + room gallery |
-| `beyond` | `BeyondTheFalls.jsx` | Southern Africa: Zimbabwe, Botswana, Zambia, Namibia, South Africa |
-| `visas` | `Visas.jsx` | Visas & immigration, KAZA UniVisa, ZIMRA TIP |
-| `about` | `About.jsx` | Who we are, mandate, beliefs, the team |
-| `social` | `Socials.jsx` | Every social channel as a clickable card |
-| `ai` | `MeetTunya.jsx` | The conversational assistant |
-| `plan` | `PlanMyTrip.jsx` | Enquiry form + contact details |
-
-**Header behaviour**
-
-- "Beyond the Falls ▾" opens a dropdown: Destinations · Customs & Immigration · About Tunyafrika · Our Footprints on Socials.
-- "Meet Tunya" and the gold "Plan My Trip" button open **www.tunya.africa** in a new tab.
-- The internal Meet Tunya and Plan My Trip pages are reachable from the footer.
+| Key | URL | Component | Page |
+|---|---|---|---|
+| `home` | `/` | `Home.jsx` | Hero film, who we are, four-day strip, Ask Tunya, Beyond teaser |
+| `falls` | `/victoria-falls` | `VictoriaFalls.jsx` | The Falls, season guide, gallery, know-before-you-go |
+| `xp` | `/things-to-do` | `Xperiences.jsx` | Activities, the Boma Dinner, six flagship packages |
+| `stays` | `/where-to-stay` | `Stays.jsx` | Accommodation types + room gallery |
+| `beyond` | `/beyond-the-falls` | `BeyondTheFalls.jsx` | Botswana, Zambia, Namibia, South Africa |
+| `visas` | `/visas` | `Visas.jsx` | Visas, KAZA UniVisa, ZIMRA TIP |
+| `about` | `/about` | `About.jsx` | Who we are, the team |
+| `social` | `/socials` | `Socials.jsx` | Every social channel |
+| `ai` | `/ask-tunya` | `MeetTunya.jsx` | Ask Tunya (https://asktunya.vercel.app/) |
+| `plan` | `/plan-my-trip` | `PlanMyTrip.jsx` | Trip request form (emails enquiries@ via `api/plan-request.php`) |
+| — | `/accomodations`, `/content` | sub-apps | Stays marketplace, travel updates |
+| — | anything else | `NotFound.jsx` | Real 404 page |
 
 ### Adding a page
 
 1. Create `src/pages/MyPage.jsx` exporting a component that takes `{ go }`.
-2. Import it in `App.jsx` and add it to the `PAGES` object with a new key.
-3. Add a nav item in `Header.jsx` calling `go("myKey")`.
+2. Add its key and URL to `PAGE_PATHS` and `SITE_PAGE_KEYS` in `src/routes.js`, and to `PAGES` in `App.jsx`.
+3. Add its title and description to `src/content/defaults/seo.js` (and an image to `public/og/` if you like).
+4. Link to it from `site.js` (nav/footer). The build pre-renders it and adds it to the sitemap automatically.
 
-### Switching to real URLs (optional)
+---
 
-The site uses state-based routing, so every page shares one URL. If you want `/stays`, `/about` etc. for SEO and sharing, add React Router:
+## 3b. SEO: how the site is found
 
-```bash
-npm install react-router-dom
-```
+`npm run build` does three things:
 
-then replace the `PAGES` switch in `App.jsx` with `<Routes>` / `<Route>` and change `go(key)` calls to `navigate("/key")`. The page components need no changes.
+1. Builds the browser app (`vite build`).
+2. Builds a server copy (`vite build --ssr src/entry-server.jsx`).
+3. Runs `scripts/prerender.mjs`, which writes **one real HTML file per page** (`victoria-falls.html`, …) with the full page content, its own title, description, canonical URL, Open Graph/Twitter tags and schema.org data (TravelAgency + LocalBusiness, BreadcrumbList, TouristTrip packages). It also writes `sitemap.xml`, `robots.txt`, `404.html` and `spa.html` (the app shell for `/admin` and individual stays).
+
+Google therefore sees real content without running JavaScript. The browser then "hydrates" the same HTML.
+
+`public/.htaccess` (cPanel) then:
+- forces `https://www.tunyafrika.com` (301 from http and the bare domain),
+- 301-redirects the old site's pages (`about.html`, `tour.html`, `contact.html`, …) to their new homes,
+- serves clean URLs (`/visas` → `visas.html`), real 404s for unknown URLs, and security + caching headers.
+
+**After deploying:** add the site to [Google Search Console](https://search.google.com/search-console), submit `https://www.tunyafrika.com/sitemap.xml`, and set up a Google Business Profile with exactly the same name, address and phone as the footer.
+
+---
+
+## 3c. Security: admin sign-in
+
+The admin at `/admin` signs in **on the server**. No password or key is ever in the website's JavaScript.
+
+- Passwords are bcrypt hashes in `tunya-config.php`, which lives **outside** `public_html` so it can't be downloaded. Copy `tunya-config.example.php` to `/home/<cpanel-user>/tunya-config.php` and fill in one hash per person:
+
+  ```bash
+  php -r 'echo password_hash("a-long-unique-password", PASSWORD_DEFAULT), PHP_EOL;'
+  ```
+
+  Until that file exists, admin sign-in is refused (it fails closed).
+- Sign-in creates an HttpOnly, Secure, SameSite=Strict session cookie (8 hours idle, or 30 days with "Stay signed in"). Every admin write also needs a CSRF token.
+- Sign-in is rate limited (5 wrong passwords per IP per 15 minutes). Public forms (trip requests, bookings, stay enquiries) and outgoing mail are rate limited too.
+- The APIs only accept cookies from tunyafrika.com. Previews on Vercel/Netlify can show the public site but can't sign in to the admin.
+- Local development: `npm run dev` prints a random admin password in the terminal (or set `TUNYA_DEV_PASSWORD`).
+
+Never put a secret in a `VITE_` variable: everything prefixed `VITE_` is published in the JavaScript.
 
 ---
 
@@ -268,7 +294,7 @@ Once the CMS is connected and seeded, items 1, 2 and 4 are all editable in the S
 
 1. **Social handles** — every link currently points at `@tunyafrika` (Facebook, Instagram, X, TikTok). Confirm the real URLs.
 2. **Team portraits** — the five team members show gold monogram placeholders. Upload a portrait against each member and the monogram is replaced automatically.
-3. **The enquiry form** — `PlanMyTrip.jsx` is visual only; it does not submit yet. Wire it to your mailer, CRM, or a service like Formspree, or point the button at www.tunya.africa.
+3. **The enquiry form** — `PlanMyTrip.jsx` now emails enquiries@tunyafrika.com through `public/api/plan-request.php`. Send one test request after each deploy.
 4. **Destination imagery** — Namibia and South Africa currently use stock stand-ins. Replace with real Tunyafrika trip photography when available.
 5. **Visa content** — the Visas page carries a "last reviewed" date and a disclaimer. Immigration rules move; review the page each quarter and update the date in the Studio.
 6. **Analytics / pixel** — add your tracking script to `index.html` before `</head>`.
@@ -280,7 +306,7 @@ Once the CMS is connected and seeded, items 1, 2 and 4 are all editable in the S
 - WhatsApp / phone: **+263 78 266 9251**
 - Email: **enquiries@tunyafrika.com**
 - Office: **619 Ngugwuma Road, Victoria Falls, Zimbabwe**
-- Assistant: **www.tunya.africa**
+- Ask Tunya (trip planner): **https://asktunya.vercel.app/**
 - Web: **www.tunyafrika.com**
 
 ---

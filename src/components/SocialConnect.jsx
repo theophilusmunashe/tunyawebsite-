@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { useContent } from "../content/ContentProvider.jsx";
 import { FOLLOW_NETWORKS, SOCIAL_LABELS, SocialIcon } from "./SocialIcons.jsx";
 
@@ -23,7 +24,11 @@ function rememberSeen() {
 export default function SocialConnect() {
   const { site, social } = useContent();
   const [popup, setPopup] = useState(false);
-  const [showDock, setShowDock] = useState(alreadySeen);
+  // Start hidden on both server and client (pre-rendered HTML must match); the effect below reveals it.
+  const [showDock, setShowDock] = useState(false);
+  const { pathname } = useLocation();
+  // Never interrupt someone who is filling in a trip request.
+  const quietPage = pathname.startsWith("/plan-my-trip");
 
   const channels = FOLLOW_NETWORKS.map((network) => {
     const fromFooter = (site.footer.socials || []).find((s) => s.network === network);
@@ -48,9 +53,10 @@ export default function SocialConnect() {
       setShowDock(true);
       return undefined;
     }
+    if (quietPage) return undefined;
     const wait = window.setTimeout(() => setPopup(true), 10000);
     return () => window.clearTimeout(wait);
-  }, []);
+  }, [quietPage]);
 
   useEffect(() => {
     if (!popup) return undefined;
@@ -91,10 +97,10 @@ export default function SocialConnect() {
         <div className="site-social-pop" role="dialog" aria-labelledby="site-social-pop-title" aria-modal="true">
           <div className="site-social-pop-card">
             <p className="site-social-pop-kicker">Follow us on social media</p>
-            <h2 id="site-social-pop-title">We value you being here.</h2>
+            <h2 id="site-social-pop-title">Thanks for stopping by.</h2>
             <p className="site-social-pop-copy">
-              Thank you for checking out how Tunyafrika provides Xpectional Xperiences.
-              Please follow all our social media accounts, then come back and keep exploring.
+              We're Theo, Rudolph and Dzika, the local team behind Tunyafrika in Victoria Falls.
+              Follow us for daily views of the Falls, then carry on exploring.
             </p>
             <div className="site-social-pop-grid">
               {channels.map((c) => (
@@ -115,7 +121,7 @@ export default function SocialConnect() {
               ))}
             </div>
             <button type="button" className="site-social-pop-continue" onClick={closePopup}>
-              Continue to the site
+              Keep exploring
             </button>
           </div>
         </div>

@@ -4,6 +4,12 @@ export const home = {
   hero: {
     image: "/assets/br-falls-aerial.jpg",
     imageAlt: "Victoria Falls from the air",
+    // Hero film (same footage as Ask Tunya), served by Cloudinary: muted, no audio track, sized per screen.
+    video: {
+      desktop: "https://res.cloudinary.com/dwx3y9j1d/video/upload/q_auto:low,w_1280,ac_none,vc_h264/v1793800338/hero_ql5jme.mp4",
+      mobile: "https://res.cloudinary.com/dwx3y9j1d/video/upload/q_auto:eco,w_720,ac_none,vc_h264/v1793800338/hero_ql5jme.mp4",
+      poster: "https://res.cloudinary.com/dwx3y9j1d/video/upload/so_0,q_auto,f_jpg,w_1600/v1793800338/hero_ql5jme.jpg"
+    },
     kicker: "Victoria Falls · Zimbabwe",
     title: "Victoria Falls Tours by Locals",
     titleLead: "Victoria Falls Tours ",

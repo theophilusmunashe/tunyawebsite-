@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { applyHead, headFor } from "../seo/meta.js";
 import { publicUpdates } from "../content-engine/api.js";
 import { formatWhen } from "../content-engine/model.js";
 
@@ -23,9 +24,7 @@ export default function ContentUpdates() {
   }, []);
 
   useEffect(() => {
-    const prev = document.title;
-    document.title = "Tunyafrika Updates — Africa tourism news";
-    return () => { document.title = prev; };
+    applyHead(headFor("content"));
   }, []);
 
   return (
@@ -34,7 +33,7 @@ export default function ContentUpdates() {
         <div className="ce-hero-copy">
           <img className="ce-hero-logo" src="/assets/logo-cream.png" alt="Tunyafrika" />
           <h1 className="ce-brand">Tunyafrika Updates</h1>
-          <p className="ce-lede">Africa tourism headlines — short notes only, always credited to the original source.</p>
+          <p className="ce-lede">Africa travel news and Victoria Falls updates in short notes, always credited to the original source.</p>
         </div>
       </section>
 
@@ -42,7 +41,7 @@ export default function ContentUpdates() {
         {loading && <div className="ce-empty">Loading updates…</div>}
         {!loading && error && <div className="ce-empty">{error}</div>}
         {!loading && !error && items.length === 0 && (
-          <div className="ce-empty">Approved Tunyafrika Updates will appear here once the team publishes them from the workspace.</div>
+          <div className="ce-empty">No updates yet. Check back soon, or follow us on socials for daily news from the Falls.</div>
         )}
 
         <div className="ce-grid">

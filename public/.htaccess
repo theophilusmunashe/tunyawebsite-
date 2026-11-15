@@ -1,8 +1,83 @@
+# www.tunyafrika.com — LiteSpeed / Apache (cPanel)
+
+Options -Indexes -MultiViews
+DirectoryIndex index.html
+ErrorDocument 404 /404.html
+
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
-  RewriteRule ^index\.html$ - [L]
-  RewriteCond %{REQUEST_FILENAME} !-f
+
+  # 1. One canonical address: https://www.tunyafrika.com (301 from http:// and the bare domain)
+  RewriteCond %{HTTPS} !=on [OR]
+  RewriteCond %{HTTP_HOST} !^www\. [NC]
+  RewriteCond %{HTTP_HOST} ^(?:www\.)?tunyafrika\.com$ [NC]
+  RewriteRule ^ https://www.tunyafrika.com%{REQUEST_URI} [R=301,L,NE]
+
+  # 2. Old site pages still in Google → closest new page (301 keeps their ranking)
+  RewriteRule ^index\.html$ / [R=301,L]
+  RewriteRule ^tour\.html$ /things-to-do [R=301,L]
+  RewriteRule ^destination\.html$ /where-to-stay [R=301,L]
+  RewriteRule ^contact\.html$ /plan-my-trip [R=301,L]
+  RewriteRule ^(shop|events|africaisdigital)\.html$ / [R=301,L]
+
+  # 3. Any other direct request for /page.html → /page (no duplicate URLs)
+  RewriteCond %{THE_REQUEST} \s/+([^?\s]+?)\.html[\s?] [NC]
+  RewriteCond %{REQUEST_URI} !^/(404|spa)\.html$ [NC]
+  RewriteRule ^ /%1 [R=301,L,NE]
+
+  # 4. Trailing slash → none (except the home page)
   RewriteCond %{REQUEST_FILENAME} !-d
-  RewriteRule . /index.html [L]
+  RewriteRule ^(.+)/$ /$1 [R=301,L]
+
+  # Real files (assets, images, PHP APIs) are served as they are
+  RewriteCond %{REQUEST_FILENAME} -f
+  RewriteRule ^ - [L]
+
+  # 5. Clean URLs → pre-rendered pages: /victoria-falls → victoria-falls.html
+  RewriteCond %{DOCUMENT_ROOT}/$1.html -f
+  RewriteRule ^([a-z0-9-]+)$ $1.html [L]
+
+  # 6. Client-only routes (admin, individual stays) use the app shell
+  RewriteRule ^(admin|accomodations)(/.*)?$ spa.html [L]
+
+  # Everything else falls through to ErrorDocument 404 (a real 404 status)
 </IfModule>
+
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()"
+  Header always set Cross-Origin-Opener-Policy "same-origin"
+  Header always set Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' https://res.cloudinary.com; connect-src 'self' https://*.sanity.io https://*.apicdn.sanity.io https://api.emailjs.com; frame-src 'self' blob: data:; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'; upgrade-insecure-requests"
+  Header unset X-Powered-By
+
+  # Hashed build files never change → cache for a year. Pages always revalidate.
+  <FilesMatch "-[A-Za-z0-9_-]{8}\.(js|css)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+  <FilesMatch "\.(html)$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+  <FilesMatch "\.(jpg|jpeg|png|webp|gif|svg|ico|pdf)$">
+    Header set Cache-Control "public, max-age=2592000"
+  </FilesMatch>
+</IfModule>
+
+# The admin and the app shell must never appear in search
+<IfModule mod_setenvif.c>
+  SetEnvIf Request_URI "^/(admin|spa\.html)" TUNYA_NOINDEX
+</IfModule>
+<IfModule mod_headers.c>
+  Header always set X-Robots-Tag "noindex, nofollow" env=TUNYA_NOINDEX
+</IfModule>
+
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css text/plain text/xml application/javascript application/json application/xml image/svg+xml
+</IfModule>
+
+# Never serve source maps, env files, backups or config
+<FilesMatch "(^\.|\.(env|map|bak|sql|log|ini|lock|md)$|^(package(-lock)?\.json|composer\.(json|lock)|tunya-config\.php)$)">
+  Require all denied
+</FilesMatch>

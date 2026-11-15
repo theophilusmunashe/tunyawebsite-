@@ -34,3 +34,5 @@ tunya-config.php
 public/api/security-data/*
 !public/api/security-data/.gitkeep
 !public/api/security-data/.htaccess
+
+dist-ssr

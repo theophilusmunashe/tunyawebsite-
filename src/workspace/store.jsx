@@ -33,6 +33,8 @@ export function WorkspaceProvider({ children }) {
   const [data, setData] = useState({ settings: {}, files: [] });
   const [session, setSession] = useState(null);
   const [authChecked, setAuthChecked] = useState(false);
+  // True once the shared records have been loaded for the signed-in person.
+  const [dataLoaded, setDataLoaded] = useState(false);
   const [toasts, setToasts] = useState([]);
   const [sync, setSync] = useState({ status: "idle", at: 0, error: "" });
   const cloudLock = useRef(Promise.resolve());
@@ -152,6 +154,7 @@ export function WorkspaceProvider({ children }) {
       });
     } finally {
       setReady(true);
+      setDataLoaded(true);
     }
   }, [applyCloudPack, hydrate, runCloud]);
 
@@ -180,7 +183,10 @@ export function WorkspaceProvider({ children }) {
   }, [authChecked, session?.crewId]);
 
   useEffect(() => {
-    const onExpired = () => setSession(null);
+    const onExpired = () => {
+      setDataLoaded(false);
+      setSession(null);
+    };
     window.addEventListener(SIGNIN_REQUIRED_EVENT, onExpired);
     return () => window.removeEventListener(SIGNIN_REQUIRED_EVENT, onExpired);
   }, []);
@@ -303,6 +309,7 @@ export function WorkspaceProvider({ children }) {
 
   const signOut = useCallback(async () => {
     await adminLogout();
+    setDataLoaded(false);
     setSession(null);
   }, []);
 
@@ -331,7 +338,7 @@ export function WorkspaceProvider({ children }) {
   );
 
   const value = {
-    ready,
+    ready: ready && (!session || dataLoaded),
     ...data,
     you,
     session,

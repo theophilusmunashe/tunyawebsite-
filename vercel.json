@@ -1,22 +1,24 @@
 {
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "redirects": [
+    { "source": "/tour.html", "destination": "/things-to-do", "permanent": true },
+    { "source": "/destination.html", "destination": "/where-to-stay", "permanent": true },
+    { "source": "/contact.html", "destination": "/plan-my-trip", "permanent": true },
+    { "source": "/(shop|events|africaisdigital).html", "destination": "/", "permanent": true }
+  ],
   "rewrites": [
-    {
-      "source": "/((?!assets/|api/).*)",
-      "destination": "/index.html"
-    }
+    { "source": "/admin", "destination": "/spa.html" },
+    { "source": "/admin/(.*)", "destination": "/spa.html" },
+    { "source": "/accomodations/(.*)", "destination": "/spa.html" }
   ],
   "headers": [
     {
-      "source": "/api/(.*)\\.php",
+      "source": "/(.*)",
       "headers": [
-        {
-          "key": "X-Tunya-Api-Note",
-          "value": "PHP APIs run on www.tunyafrika.com (cPanel), not on Vercel. The admin client calls the live API from preview hosts."
-        },
-        {
-          "key": "Allow",
-          "value": "GET, HEAD, OPTIONS"
-        }
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
       ]
     }
   ]

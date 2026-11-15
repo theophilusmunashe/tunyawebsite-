@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { WorkspaceProvider, useWorkspace } from "./store.jsx";
 import Gate from "./Gate.jsx";
 import Shell from "./Shell.jsx";
@@ -18,6 +19,18 @@ function GateOrDesk() {
 }
 
 export default function WorkspaceApp() {
+  // Keep the admin out of search results even if someone links to it.
+  useEffect(() => {
+    document.title = "Admin — Tunyafrika";
+    let tag = document.head.querySelector('meta[name="robots"]');
+    if (!tag) {
+      tag = document.createElement("meta");
+      tag.setAttribute("name", "robots");
+      document.head.appendChild(tag);
+    }
+    tag.setAttribute("content", "noindex, nofollow");
+  }, []);
+
   return (
     <WorkspaceProvider>
       <GateOrDesk />

@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { client, cmsConfigured } from "../lib/sanity.js";
+import { cmsConfigured, loadSanity } from "../lib/sanity.js";
 import { defaults, CONTENT_KEYS } from "./defaults/index.js";
 import { mergeContent } from "./merge.js";
 
@@ -12,11 +12,11 @@ export function ContentProvider({ children }) {
   const [content, setContent] = useState(defaults);
 
   useEffect(() => {
-    if (!cmsConfigured || !client) return;
+    if (!cmsConfigured) return;
     let cancelled = false;
 
-    client
-      .fetch(QUERY)
+    loadSanity()
+      .then((client) => (client && !cancelled ? client.fetch(QUERY) : null))
       .then((data) => {
         if (cancelled || !data) return;
         setContent(mergeContent(defaults, stripSanityKeys(data)));

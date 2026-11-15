@@ -80,7 +80,7 @@ function PackageModal({ item, onClose }) {
             </div>
           ) : booking ? (
             <form className="xp-book-form" onSubmit={send}>
-              <p className="xp-modal-copy" style={{ marginTop: 0 }}>Leave your email and we will send this booking request to operations@tunyafrika.com.</p>
+              <p className="xp-modal-copy" style={{ marginTop: 0 }}>Leave your email and our operations team will confirm this booking with you.</p>
               <label>
                 <span>Email</span>
                 <input type="email" required autoFocus value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@email.com" />
@@ -92,7 +92,7 @@ function PackageModal({ item, onClose }) {
               <input type="text" name="website" tabIndex={-1} autoComplete="off" className="xp-honeypot" />
               {error && <p className="xp-book-error">{error}</p>}
               <div className="xp-modal-actions">
-                <button type="submit" className="x12 xp-btn-gold" disabled={busy}>{busy ? "Sending…" : "Send request"}</button>
+                <button type="submit" className="x12 xp-btn-gold" disabled={busy}>{busy ? "Sending…" : "Send booking request"}</button>
                 <button type="button" className="xp-btn-ghost" disabled={busy} onClick={() => setBooking(false)}>Back</button>
               </div>
             </form>
@@ -133,7 +133,7 @@ export default function Xperiences({ go }) {
                 <div style={cardKickerStyle}>{item.kicker}</div>
                 <div style={{fontFamily: "'Cormorant Garamond', serif", fontSize: "34px", lineHeight: "1.1", marginTop: "6px"}}>{item.title}</div>
                 <div style={{fontSize: "15px", fontWeight: "300", marginTop: "8px", color: "rgba(250,243,232,0.88)"}}>{item.lede || item.body}</div>
-                <button type="button" className="x12 xp-view-btn" onClick={() => setOpen(item)}>View package</button>
+                <button type="button" className="x12 xp-view-btn" onClick={() => setOpen(item)}>See the full trip</button>
               </div>
             </div>
           ))}
