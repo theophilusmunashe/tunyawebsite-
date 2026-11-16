@@ -50,6 +50,7 @@ export function organizationJsonLd() {
     "@id": `${SITE_URL}/#org`,
     name: SITE_NAME,
     alternateName: "Tunyafrika",
+    slogan: "Xceptional Xperiences",
     url: `${SITE_URL}/`,
     logo: abs("/assets/logo-cream.png"),
     image: abs("/og/home.jpg"),

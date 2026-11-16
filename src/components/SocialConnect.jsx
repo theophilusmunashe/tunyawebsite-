@@ -99,8 +99,8 @@ export default function SocialConnect() {
             <p className="site-social-pop-kicker">Follow us on social media</p>
             <h2 id="site-social-pop-title">Thanks for stopping by.</h2>
             <p className="site-social-pop-copy">
-              We're Theo, Rudolph and Dzika, the local team behind Tunyafrika in Victoria Falls.
-              Follow us for daily views of the Falls, then carry on exploring.
+              Xceptional Xperiences start here. Follow Tunyafrika for daily views of Victoria Falls,
+              wildlife and the latest openings, then carry on exploring.
             </p>
             <div className="site-social-pop-grid">
               {channels.map((c) => (
