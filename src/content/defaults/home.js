@@ -11,16 +11,16 @@ export const home = {
       poster: "https://res.cloudinary.com/dwx3y9j1d/video/upload/so_0,q_auto,f_jpg,w_1600/v1793800338/hero_ql5jme.jpg"
     },
     kicker: "Victoria Falls · Zimbabwe",
-    title: "Victoria Falls Tours by Locals",
-    titleLead: "Victoria Falls Tours ",
-    titleAccent: "by Locals",
-    tagline: "Theo · Rudolph · Dzika",
-    body: "Tours, activities and places to stay in Victoria Falls, planned by a small team who live here. We pick you up, book everything and handle the borders, including a Chobe day trip to Botswana if you want one.",
+    // No `title`, so the heading renders as lead + gold accent.
+    titleLead: "Feel the Smoke ",
+    titleAccent: "That Thunders",
+    tagline: "Xceptional Xperiences",
+    body: "Victoria Falls tours, safaris and stays, crafted by the most exciting team in the region. From your first message to your flight home, every transfer, activity and border crossing is handled with precision. All that's left for you is the thrill.",
     primaryCta: { label: "Plan My Trip", href: TUNYA_URL },
     secondaryCta: { label: "See Things To Do", page: "xp" }
   },
   way: {
-    kicker: "Who you're dealing with",
+    kicker: "Why travel with us",
     titleLead: "Born here. ",
     titleAccent: "Based here.",
     paragraphs: [
@@ -39,12 +39,12 @@ export const home = {
   },
   meetDzika: {
     image: "/assets/meet-dzika.jpg",
-    imageAlt: "Dzikamai at Victoria Falls",
-    kicker: "Meet Dzika",
+    imageAlt: "A Tunyafrika host at Victoria Falls",
+    kicker: "Meet the team",
     title: "Welcome to our Victoria Falls.",
     paragraphs: [
-      "I'm Dzikamai, but everyone calls me Dzika. I run operations at Tunyafrika with Theo and Rudolph. We grew up here with the sound of the Falls in our ears. This isn't a place we studied. It's home.",
-      "Ask us anything: when the water is highest, how the border works, which lodge is quiet, where to eat tonight. We'll give you a straight answer, even when it's not the one you hoped for. Need a table, a transfer or a pickup? Message us and one of us will sort it."
+      "We grew up within sound of the Falls and turned that local knowledge into a team that is serious about service and relentless about fun. This isn't a destination we studied. It's home, and we love showing it off.",
+      "Ask us anything: when the water peaks, how the borders work, which lodge suits you, where to dine tonight. You'll get a clear, honest answer and a team that moves fast to make it happen. That's what Xceptional Xperiences means to us."
     ],
     cta: { label: "Meet the Team", page: "about" }
   },

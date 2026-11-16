@@ -22,7 +22,7 @@ export const site = {
     cta: { label: "Plan My Trip", href: TUNYA_URL }
   },
   footer: {
-    tagline: "Locally owned · Victoria Falls",
+    tagline: "Xceptional Xperiences",
     blurb: "Victoria Falls tours, activities and stays, planned and guided by our own local team. We also take you on to Botswana, Zambia, Namibia and South Africa.",
     exploreHeading: "Explore",
     explore: [
